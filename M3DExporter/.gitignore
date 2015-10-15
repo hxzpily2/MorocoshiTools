@@ -1,4 +1,7 @@
 /*.as3proj
 /*.lnk
+/*.bat
 /obj
+/bat
 /material
+/bin/M3DExporter.swf
