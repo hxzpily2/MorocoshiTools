@@ -1,3 +1,5 @@
 *.lnk
 /obj
+/bat
 /*.as3proj
+/bin/TFPConverter2.swf
