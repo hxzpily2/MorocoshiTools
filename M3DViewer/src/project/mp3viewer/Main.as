@@ -13,6 +13,7 @@ package project.mp3viewer
 	import net.morocoshi.air.drop.DropEvent;
 	import net.morocoshi.air.files.FileUtil;
 	import net.morocoshi.common.graphics.Draw;
+	import net.morocoshi.common.timers.FrameTimer;
 	import net.morocoshi.components.minimal.style.Coloration;
 	
 	/**
@@ -81,10 +82,11 @@ package project.mp3viewer
 		{
 			if (e.arguments.length == 0) return;
 			var path:String = e.arguments[0] as String;
-			loadFile(FileUtil.toFile(path));
 			
 			stage.nativeWindow.alwaysInFront = true;
 			stage.nativeWindow.alwaysInFront = false;
+			
+			FrameTimer.setTimer(1, loadFile, [FileUtil.toFile(path)]);
 		}
 		
 		private function loader_parseHandler(modelData:ModelData):void 
