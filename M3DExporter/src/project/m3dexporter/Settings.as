@@ -9,6 +9,8 @@ package project.m3dexporter
 	import flash.text.TextFormat;
 	import mx.utils.StringUtil;
 	import net.morocoshi.air.components.minimal.Modal;
+	import net.morocoshi.air.windows.ModalManager;
+	import net.morocoshi.air.windows.WindowUtil;
 	import net.morocoshi.common.graphics.Palette;
 	import net.morocoshi.components.balloon.MouseOverLabel;
 	import net.morocoshi.components.minimal.input.InputFile;
@@ -21,9 +23,11 @@ package project.m3dexporter
 	 *  
 	 * @author tencho
 	 */
-	public class Settings extends LayoutCell
+	public class Settings
 	{
-		private var isReady:Boolean = false;
+		private var window:NativeWindow;
+		private var option:M3DExportOption;
+		
 		private var useHideLayer:CheckBox;
 		private var useVisible:CheckBox;
 		
@@ -50,9 +54,10 @@ package project.m3dexporter
 		private var optimizeSurface:CheckBox;
 		private var extractObjectParam:CheckBox;
 		private var objectParamsButton:PushButton;
-		private var objectParamList:Array;
+		//private var objectParamList:Array;
 		private var textArea:TextArea;
 		private var lockUserPropertyObject:CheckBox;
+		private var lockSkinEmptyObject:CheckBox;
 		
 		//private var simpleTangent4:CheckBox;
 		//private var useShow:CheckBox;
@@ -69,11 +74,18 @@ package project.m3dexporter
 		
 		public function Settings() 
 		{
-			super();
+			window = new NativeWindow(WindowUtil.createOption());
+			window.addEventListener(Event.CLOSING, window_closingHandler);
 			
-			pane = new ScrollPane(this, 0, 0);
+			window.stage.scaleMode = "noScale";
+			window.stage.align = "TL";
+			window.stage.stageWidth = 300;
+			window.stage.stageHeight = 480;
+			window.stage.addEventListener(Event.RESIZE, stage_resizeHandler);
+			
+			pane = new ScrollPane(window.stage, 0, 0);
 			var box:VBox = new VBox(pane.content);
-			box.spacing = 10;
+			box.spacing = 12;
 			
 			var rgb:uint = 0xdd2244;
 			useHideLayer = createCheckBox(box, "非表示レイヤーを書き出す", rgb);
@@ -111,8 +123,9 @@ package project.m3dexporter
 			
 			rgb = 0x4444dd;
 			//new Component(box).height = 5;
-			deleteEmptyObject = createCheckBox(box, "空のコンテナを削除する", rgb);
-			lockUserPropertyObject = createCheckBox(box, "（ユーザープロパティ付きは削除しない）", rgb);
+			deleteEmptyObject = createCheckBox(box, "空っぽのコンテナを削除する", rgb);
+			lockUserPropertyObject = createCheckBox(box, " （ユーザープロパティ付きは削除しない）", rgb);
+			lockSkinEmptyObject = createCheckBox(box, " （スキンの中の空コンテナは削除しない）", rgb);
 			optimizeSurface = createCheckBox(box, "同一マテリアルのサーフェイスを統合する", rgb);
 			moveToRoot = createCheckBox(box, "可能なものは全てルート階層に移動する", rgb);
 			MouseOverLabel.instance.setLabel(deleteEmptyObject, "中に何も入っていない空のコンテナオブジェクトを削除します。");
@@ -130,20 +143,44 @@ package project.m3dexporter
 			//simpleTangent4 = new CheckBox(box, 0, 0, "△タンジェント情報を適当にしてサイズを減らす");
 			
 			pane.watchContentResize = true;
-			isReady = true;
+			stage_resizeHandler(null);
 		}
 		
-		private function createCheckBox(parent:VBox, label:String, rgb:uint):CheckBox 
+		private function window_closingHandler(e:Event):void 
 		{
-			var check:CheckBox = new CheckBox(parent, 0, 0, label);
-			check.getChildAt(2).transform.colorTransform = Palette.getFillColor(rgb);
-			return check;
+			option.exportCamera = exportCamera.selected;
+			option.exportLight = exportLight.selected;
+			option.exportNormal = exportNormalMap.selected;
+			//option.exportReflection = exportReflectionMap.selected;
+			option.exportTransparent = exportTransparentMap.selected;
+			
+			option.exportUV = exportVertexUV.selected;
+			option.exportNormal = exportVertexNormal.selected;
+			option.exportVertexColor = exportVertexColor.selected;
+			option.exportTangent4 = exportVertexTangent.selected;
+			
+			option.extractObjectParam = extractObjectParam.selected;
+			//option.objectParamList = Main.current.user.objectParamList;
+			//option.removeDirectory = removeDirectory.selected;
+			option.useHideLayer = useHideLayer.selected;
+			option.useFreezeLayer = useFreezeLayer.selected;
+			option.useVisible = useVisible.selected;
+			option.autoRepeat = autoRepeat.selected;
+			option.deleteEmptyObject = deleteEmptyObject.selected;
+			option.lockUserPropertyObject = lockUserPropertyObject.selected;
+			option.lockSkinEmptyObject = lockSkinEmptyObject.selected;
+			option.moveToRoot = moveToRoot.selected;
+			option.optimizeSurface = optimizeSurface.selected;
+			
+			option.moveBasePoint = false;//moveBasePoint.selected;
+			option.useShow = false;// useShow.selected;
 		}
 		
-		public function load(user:UserFile):void 
+		public function open(option:M3DExportOption):void
 		{
-			var option:M3DExportOption = user.option;
-			objectParamList = option.objectParamList;
+			this.option = option;
+			
+			//objectParamList = option.objectParamList;
 			
 			//simpleTangent4.selected = option.simpleTangent4;
 			//useShow.selected = option.useShow;
@@ -154,6 +191,7 @@ package project.m3dexporter
 			autoRepeat.selected = option.autoRepeat;
 			deleteEmptyObject.selected = option.deleteEmptyObject;
 			lockUserPropertyObject.selected = option.lockUserPropertyObject;
+			lockSkinEmptyObject.selected = option.lockSkinEmptyObject;
 			
 			exportCamera.selected = option.exportCamera;
 			exportLight.selected = option.exportLight;
@@ -174,80 +212,56 @@ package project.m3dexporter
 			optimizeSurface.selected = option.optimizeSurface;
 			
 			updateButtonLabel();
+			
+			ModalManager.activate(window);
+			WindowUtil.moveCenter(window);
+		}
+		
+		private function createCheckBox(parent:VBox, label:String, rgb:uint):CheckBox 
+		{
+			var check:CheckBox = new CheckBox(parent, 0, 0, label);
+			check.getChildAt(0).y += 1;
+			check.getChildAt(1).y += 1;
+			check.getChildAt(2).transform.colorTransform = Palette.getFillColor(rgb);
+			return check;
 		}
 		
 		private function updateButtonLabel():void 
 		{
-			objectParamsButton.label = "抽出するアトリビュート名の設定(" + objectParamList.length +")";
+			objectParamsButton.label = "抽出するアトリビュート名の設定(" + option.objectParamList.length +")";
 		}
 		
 		private function params_clickHandler(e:Event):void 
 		{
 			var win:NativeWindow = Modal.confirm("カンマ区切り", inputParamList_okHandler, null, true, 210, 400);
+			win.stage.scaleMode = "noScale";
+			win.stage.align = "TL";
+			
 			textArea = new TextArea();
 			textArea.setSize(360, 200);
 			textArea.x = 20;
 			textArea.y = 45;
-			textArea.text = objectParamList.join(",");
-			textArea.textField.defaultTextFormat = new TextFormat(null, 20);
+			textArea.text = option.objectParamList.join(",");
+			textArea.textField.defaultTextFormat = new TextFormat(null, 12);
+			
 			win.stage.addChild(textArea);
 		}
 		
 		private function inputParamList_okHandler():void 
 		{
-			objectParamList.length = 0;
+			option.objectParamList.length = 0;
 			var items:Array = textArea.text.split(",");
 			var n:int = items.length;
 			for (var i:int = 0; i < n; i++) 
 			{
-				objectParamList.push(StringUtil.trim(items[i]));
+				option.objectParamList.push(items[i].replace(/\n|\r|\s/g, ""));
 			}
 			updateButtonLabel();
 		}
 		
-		public function save(user:UserFile):void 
+		private function stage_resizeHandler(e:Event):void 
 		{
-			user.option = getOption();
-		}
-		
-		public function getOption():M3DExportOption
-		{
-			var option:M3DExportOption = new M3DExportOption();
-			
-			option.exportCamera = exportCamera.selected;
-			option.exportLight = exportLight.selected;
-			option.exportNormal = exportNormalMap.selected;
-			//option.exportReflection = exportReflectionMap.selected;
-			option.exportTransparent = exportTransparentMap.selected;
-			
-			option.exportUV = exportVertexUV.selected;
-			option.exportNormal = exportVertexNormal.selected;
-			option.exportVertexColor = exportVertexColor.selected;
-			option.exportTangent4 = exportVertexTangent.selected;
-			
-			option.extractObjectParam = extractObjectParam.selected;
-			option.objectParamList = Main.current.user.objectParamList;
-			//option.removeDirectory = removeDirectory.selected;
-			option.useHideLayer = useHideLayer.selected;
-			option.useFreezeLayer = useFreezeLayer.selected;
-			option.useVisible = useVisible.selected;
-			option.autoRepeat = autoRepeat.selected;
-			option.deleteEmptyObject = deleteEmptyObject.selected;
-			option.lockUserPropertyObject = lockUserPropertyObject.selected;
-			option.moveToRoot = moveToRoot.selected;
-			option.optimizeSurface = optimizeSurface.selected;
-			
-			option.moveBasePoint = false;//moveBasePoint.selected;
-			option.useShow = false;// useShow.selected;
-			
-			return option;
-		}
-		
-		override public function setSize(w:Number, h:Number):void 
-		{
-			if (!isReady) return;
-			super.setSize(w, h);
-			pane.setSize(w, h);
+			pane.setSize(window.stage.stageWidth, window.stage.stageHeight);
 		}
 		
 	}

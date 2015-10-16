@@ -1,8 +1,9 @@
-package project.m3dexporter 
+package project.m3dexporter.menu 
 {
 	import flash.display.NativeMenuItem;
 	import net.morocoshi.air.menu.AirMenu;
 	import project.m3dexporter.data.UserFile;
+	import project.m3dexporter.Main;
 	/**
 	 * ...
 	 * @author tencho
@@ -10,60 +11,56 @@ package project.m3dexporter
 	public class AppMenu 
 	{
 		private var user:UserFile;
-		private var autoParse:NativeMenuItem;
 		private var checkOverride:NativeMenuItem;
-		private var autoResetCamera:NativeMenuItem;
+		private var showTraceWindow:NativeMenuItem;
 		
 		public var menu:AirMenu;
 		
 		public function AppMenu() 
-		{
-			
+		{			
 		}
 		
 		public function init(user:UserFile):void
 		{
 			this.user = user;
+			
 			menu = new AirMenu();
+			
 			var menuItem:AirMenu;
 			
 			menuItem = new AirMenu();
 			menuItem.addMenuItem("閉じる", "", null, Main.current.user.saveAndClose);
-			
 			menu.addSubmenu(menuItem, "ファイル");
 			
 			menuItem = new AirMenu();
-			autoParse = menuItem.addMenuItem("ショートカット起動時にファイルをパースして保存する", "", null, selectAutoParse);
 			checkOverride = menuItem.addMenuItem("同名ファイルの上書きを確認する", "", null, selectCheckOverride);
-			autoResetCamera = menuItem.addMenuItem("プレビュー時に毎回カメラを初期位置に戻す", "", null, selectAutoResetCamera);
 			menu.addSubmenu(menuItem, "設定");
+			
+			menuItem = new AirMenu();
+			showTraceWindow = menuItem.addMenuItem("トレースウィンドウ", "", null, selectTraceWindow);
+			menu.addSubmenu(menuItem, "表示");
 			
 			updateCheck();
 		}
 		
-		private function selectAutoResetCamera():void 
+		private function selectTraceWindow():void 
 		{
-			user.menuOption.autoResetCamera = !user.menuOption.autoResetCamera;
+			user.showTraceWindow = !user.showTraceWindow;
 			updateCheck();
 		}
 		
 		private function selectCheckOverride():void 
 		{
-			user.menuOption.checkOverride = !user.menuOption.checkOverride;
-			updateCheck();
-		}
-		
-		private function selectAutoParse():void 
-		{
-			user.menuOption.autoParse = !user.menuOption.autoParse;
+			user.checkOverride = !user.checkOverride;
 			updateCheck();
 		}
 		
 		public function updateCheck():void
 		{
-			autoParse.checked = user.menuOption.autoParse;
-			checkOverride.checked = user.menuOption.checkOverride;
-			autoResetCamera.checked = user.menuOption.autoResetCamera
+			checkOverride.checked = user.checkOverride;
+			showTraceWindow.checked = user.showTraceWindow;
+			Main.current.tracer.visible = user.showTraceWindow;
+			Main.current.rootCell.update();
 		}
 		
 	}

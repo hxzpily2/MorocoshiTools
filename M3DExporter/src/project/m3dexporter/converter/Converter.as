@@ -1,7 +1,5 @@
-package project.m3dexporter 
+package project.m3dexporter.converter 
 {
-	import avmplus.finish;
-	import avmplus.finish;
 	import flash.display.BitmapData;
 	import flash.display.PNGEncoderOptions;
 	import flash.events.ProgressEvent;
@@ -15,7 +13,6 @@ package project.m3dexporter
 	import net.morocoshi.common.graphics.BitmapUtil;
 	import net.morocoshi.common.graphics.EdgeExtruder;
 	import net.morocoshi.common.loaders.ClassAliasUtil;
-	import net.morocoshi.common.loaders.collada.ColladaParseOption;
 	import net.morocoshi.common.loaders.collada.ColladaParser;
 	import net.morocoshi.common.loaders.collada.nodes.ColladaScene;
 	import net.morocoshi.common.loaders.fbx.events.FBXEvent;
@@ -29,14 +26,12 @@ package project.m3dexporter
 	import net.morocoshi.common.loaders.tfp.TFPLibrary;
 	import net.morocoshi.common.math.list.VectorUtil;
 	import net.morocoshi.common.timers.FrameTimer;
-	import net.morocoshi.moja3d.agal.DirectionalLightConstant;
 	import net.morocoshi.moja3d.loader.exporters.M3DColladaExporter;
 	import net.morocoshi.moja3d.loader.exporters.M3DExportOption;
 	import net.morocoshi.moja3d.loader.exporters.M3DFBXExporter;
 	import net.morocoshi.moja3d.loader.M3DInfo;
 	import net.morocoshi.moja3d.loader.M3DScene;
 	import net.morocoshi.moja3d.loader.materials.M3DMaterial;
-	import net.morocoshi.moja3d.materials.Material;
 	
 	/**
 	 * ...
@@ -52,9 +47,11 @@ package project.m3dexporter
 		private var collector:FBXParseCollector;
 		private var imageDir:File;
 		private var tfplib:TFPLibrary;
+		public var errorList:Array;
 		
 		public var onLog:Function;
 		public var onProgress:Function;
+		public var onError:Function;
 		public var onComplete:Function;
 		
 		//--------------------------------------------------------------------------
@@ -67,14 +64,18 @@ package project.m3dexporter
 		{
 		}
 		
-		public function convert(file:File, option:M3DExportOption, imageDir:File):void
+		public function convert(file:File, option:M3DExportOption, imageDir:File, output:File):void
 		{
+			errorList = [];
+			
+			this.output = output;
 			this.file = file;
 			this.option = option;
 			this.imageDir = imageDir;
 			if (!file || !file.exists)
 			{
-				onLog("変換するファイルが見つかりません。");
+				addError("変換するファイルが見つかりません。");
+				onError();
 				return;
 			}
 			
@@ -83,14 +84,14 @@ package project.m3dexporter
 			var ext:String = file.extension.toLowerCase();
 			if (ext == "dae")
 			{
-				onLog("Colladaパース開始......", false);
+				onLog("Colladaパース開始......");
 				
 				FrameTimer.setTimer(2, convertCollada, [new XML(str)]);
 			}
 			
 			if (ext == "fbx")
 			{
-				onLog("FBXパース開始......", false);
+				onLog("FBXパース開始......");
 				
 				fbxParser = new FBXParser();
 				fbxParser.addEventListener(ProgressEvent.PROGRESS, scene_progressHandler);
@@ -126,6 +127,11 @@ package project.m3dexporter
 			var exporter:M3DColladaExporter = new M3DColladaExporter();
 			var m3dScene:M3DScene = exporter.convert(colladaScene, option);
 			saveM3DScene(m3dScene);
+		}
+		
+		private function addError(text:String):void
+		{
+			errorList.push(text);
 		}
 		
 		private function scene_progressHandler(e:ProgressEvent):void 
@@ -168,7 +174,7 @@ package project.m3dexporter
 			}
 			
 			onLog("==========================================");
-			onLog("M3Dに変換しています......", false);
+			onLog("M3Dに変換しています......");
 			
 			FrameTimer.setTimer(2, timesUp, [animationFile]);
 		}
@@ -198,7 +204,7 @@ package project.m3dexporter
 			}
 			if (option.deleteEmptyObject)
 			{
-				m3dScene.removeEmptyObject(option.lockUserPropertyObject);
+				m3dScene.removeEmptyObject(option.lockUserPropertyObject, option.lockSkinEmptyObject);
 			}
 			//onLog("完了。");
 			onLog("*M3D内に" + m3dScene.objectList.length + "個のオブジェクトがあります。");
@@ -250,6 +256,7 @@ package project.m3dexporter
 		private var stock:Array;
 		private var current:Object;
 		private var materialLink:Dictionary;
+		private var output:File;
 		
 		private function fixImageEdge():void 
 		{
@@ -386,7 +393,7 @@ package project.m3dexporter
 				
 				if (exist == false)
 				{
-					onLog("■ 画像（" + FileUtil.getFileID(name) + ".xxx）が見つかりません！");
+					addError("■ 画像（" + FileUtil.getFileID(name) + ".xxx）が見つかりません！");
 				}
 			}
 			
@@ -412,7 +419,9 @@ package project.m3dexporter
 			
 			var bytes:ByteArray = new TFPConverter().export(tfplib, false);
 			onLog("M3D化完了！(" + int(bytes.bytesAvailable / 1024) + "KB)");
-			onComplete(bytes);
+			LocalFile.writeByteArray(output, bytes, true);
+			
+			onComplete();
 		}
 		
 		private function f3d_logHandler(e:TextEvent):void 

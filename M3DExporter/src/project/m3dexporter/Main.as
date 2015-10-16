@@ -1,57 +1,65 @@
-package project.m3dexporter
+package project.m3dexporter 
 {
+	import com.bit101.components.ComboBox;
+	import com.bit101.components.Component;
+	import com.bit101.components.HBox;
+	import com.bit101.components.Label;
 	import com.bit101.components.ProgressBar;
+	import com.bit101.components.PushButton;
+	import com.bit101.components.Style;
 	import flash.desktop.NativeApplication;
 	import flash.display.Sprite;
+	import flash.display.StageQuality;
 	import flash.events.Event;
 	import flash.events.InvokeEvent;
-	import flash.events.UncaughtErrorEvent;
 	import flash.filesystem.File;
 	import flash.utils.ByteArray;
 	import net.morocoshi.air.application.ApplicationData;
-	import net.morocoshi.air.components.minimal.Modal;
+	import net.morocoshi.air.drop.DragDrop;
+	import net.morocoshi.air.drop.DropEvent;
 	import net.morocoshi.air.files.FileUtil;
 	import net.morocoshi.air.files.LocalFile;
+	import net.morocoshi.common.graphics.Palette;
 	import net.morocoshi.common.timers.FrameTimer;
 	import net.morocoshi.components.balloon.MouseOverLabel;
+	import net.morocoshi.components.minimal.Bit101Util;
+	import net.morocoshi.components.minimal.grid.DataGridItem;
+	import net.morocoshi.components.minimal.input.InputFile;
 	import net.morocoshi.components.minimal.layout.LayoutCell;
 	import net.morocoshi.components.minimal.layout.LayoutData;
+	import net.morocoshi.components.minimal.layout.PaddingBox;
 	import net.morocoshi.components.minimal.style.Coloration;
-	import net.morocoshi.moja3d.loader.exporters.M3DExportOption;
+	import project.m3dexporter.asset.Asset;
+	import project.m3dexporter.converter.Converter;
+	import project.m3dexporter.converter.ConvertManager;
+	import project.m3dexporter.data.ConvertItem;
 	import project.m3dexporter.data.UserFile;
-	import project.m3dexporter.Settings;
-	import project.m3dexporter.viewer.View;
+	import project.m3dexporter.grid.FileGrid;
+	import project.m3dexporter.grid.RowItem;
+	import project.m3dexporter.menu.AppMenu;
 	
 	/**
 	 * ...
 	 * 
 	 * @author tencho
 	 */
-	public class Main extends Sprite 
+	public class Main extends Sprite
 	{
-		public var user:UserFile;
-		public var menu:AppMenu;
-		public var converter:Converter;
-		public var tracer:Tracer;
-		public var view:View;
-		public var setting:Settings;
-		public var rootCell:LayoutCell;
-		public var progressBar:ProgressBar;
-		public var fileSelector:FileSelector;
-		
-		private var currentFile:File;
-		private var outputFile:File;
-		private var isConverting:Boolean;
-		
 		static public var current:Main;
 		
-		//--------------------------------------------------------------------------
-		//
-		//  コンストラクタ
-		//
-		//--------------------------------------------------------------------------
+		public var rootCell:LayoutCell;
+		public var fileGrid:FileGrid;
+		public var user:UserFile;
+		public var appMenu:AppMenu;
+		public var progressBar:ProgressBar;
+		public var tracer:Tracer;
+		public var convertManager:ConvertManager;
 		
-		public function Main():void 
+		private var outputCombo:ComboBox;
+		private var outputFolder:InputFile;
+		
+		
+		public function Main() 
 		{
 			current = this;
 			
@@ -69,82 +77,116 @@ package project.m3dexporter
 		{
 			removeEventListener(Event.ADDED_TO_STAGE, init);
 			
-			stage.align = "TL";
-			stage.scaleMode = "noScale";
-			
-			stage.loaderInfo.uncaughtErrorEvents.addEventListener(UncaughtErrorEvent.UNCAUGHT_ERROR, globalErrorHandlere);
 			Coloration.setStyle(Coloration.STYLE_LIGHT);
+			Style.fontName = "Meiryo";
+			Style.fontSize = 12;
+			Asset.init();
+			
+			stage.scaleMode = "noScale";
+			stage.align = "TL";
+			stage.quality = StageQuality.BEST;
+			stage.frameRate = 30;
+			stage.color = 0xcccccc;
 			
 			var app:ApplicationData = new ApplicationData();
-			stage.nativeWindow.title = app.name + " " + app.version;
+			stage.nativeWindow.title = app.getTitleAndVersion();
 			
 			user = new UserFile();
 			user.onBeforeSave = savingCallback;
 			user.init(stage.nativeWindow);
 			user.load();
 			
-			converter = new Converter();
-			view = new View();
-			setting = new Settings();
 			tracer = new Tracer();
-			fileSelector = new FileSelector();
+			fileGrid = new FileGrid();
 			progressBar = new ProgressBar();
+			convertManager = new ConvertManager();
+			//setting = new Settings();
+			//fileSelector = new FileSelector();
 			
-			rootCell = new LayoutCell(this, 0, 0, LayoutCell.ALIGN_RIGHT, false);
+			rootCell = new LayoutCell(this, 0, 0, LayoutCell.ALIGN_TOP, false);
 			
-			var convert:LayoutCell = new LayoutCell(null, 0, 0, LayoutCell.ALIGN_TOP, false);
-			convert.addCell(progressBar, "10px", LayoutData.PIXEL);
-			convert.addCell(fileSelector, "145px");
-			convert.addCell(tracer, "*");
+			//var convert:LayoutCell = new LayoutCell(null, 0, 0, LayoutCell.ALIGN_TOP, false);
+			var box:HBox = new HBox();
+			var size:int = 26;
+			PushButton(box.addChild(new PushButton(null, 0, 0, "行を追加", addLine))).setSize(120, size);
+			PushButton(box.addChild(new PushButton(null, 0, 0, "選択を削除", deleteSelected))).setSize(120, size);
+			PushButton(box.addChild(new PushButton(null, 0, 0, "全て削除", deleteAll))).setSize(120, size);
+			var tool:PaddingBox = new PaddingBox(null, 0, 0, box, 5, 5, 5, 5);
+			rootCell.addCell(tool, "36px", LayoutData.PIXEL);
+			rootCell.addCell(progressBar, "10px", LayoutData.PIXEL);
+			rootCell.addCell(fileGrid.grid, "*");
 			
-			var right:LayoutCell = new LayoutCell(null, 0, 0, LayoutCell.ALIGN_TOP);
-			right.addCell(convert, "300px");
-			right.addCell(view);
+			outputCombo = new ComboBox();
+			outputCombo.addItem("ソースと同じ場所");
+			outputCombo.addItem("フォルダを指定");
+			outputCombo.addEventListener(Event.SELECT, combo_selectHandler);
+			Bit101Util.adjustComboList(outputCombo, 10, false);
+			outputFolder = new InputFile();
+			outputFolder.inputMode = InputFile.MODE_FOLDER;
 			
-			rootCell.addCell(setting, "270px", LayoutData.PIXEL);
-			rootCell.addCell(right);
+			outputFolder.value = user.outputFolder;
+			outputCombo.selectedIndex = user.outputMode;
 			
-			view.onLog = tracer.log;
-			view.build(stage, scene_completeHandler);
+			var output:LayoutCell = new LayoutCell(this, 0, 0, LayoutCell.ALIGN_LEFT, false);
+			output.addCell(new PaddingBox(null, 0, 0, new Label(null, 0, 0, "書き出し先"), 5, 0, 0, 5), "80px");
+			output.addCell(outputCombo, "150px");
+			output.addCell(new Component(), "5px");
+			output.addCell(outputFolder, "*");
+			output.addCell(new Component(), "5px");
+			output.addCell(new PushButton(null, 0, 0, "一括変換", convertAll), "140px").transform.colorTransform = Palette.getMultiplyColor(0xffdd77, 1);
 			
-			converter.onComplete = f3d_completeHandler;
-			converter.onProgress = progressHandler;
-			converter.onLog = tracer.log;
+			rootCell.addCell(tracer, "200px");
+			rootCell.addCell(output, "30px");
 			
-			setting.load(user);
-			fileSelector.onConvert = confirmConvert;
-			//fileSelector.onReloadF3D = onReloadF3D;
-			
-			view.setConvertedFiles(user.convertedFiles);
-			
-			fileSelector.loadUserData(user);
-			
-			menu = new AppMenu();
-			menu.init(user);
-			stage.nativeWindow.menu = menu.menu;
+			appMenu = new AppMenu();
+			appMenu.init(user);
+			stage.nativeWindow.menu = appMenu.menu;
+			fileGrid.setUser(user);
 			
 			stage.addChild(MouseOverLabel.instance.container);
+			
 			stage.addEventListener(Event.RESIZE, resizeHandler);
 			resizeHandler();
 			
-			FrameTimer.setTimer(3, aciveate);
+			FrameTimer.setTimer(3, activate);
 		}
 		
-		private function aciveate():void 
+		private function convertAll(e:Event):void 
+		{
+			Main.current.tracer.clear();
+			for each(var item:DataGridItem in fileGrid.grid.items)
+			{
+				convertManager.addRow(item.extra);
+			}
+		}
+		
+		private function deleteAll(e:Event):void
+		{
+			fileGrid.grid.removeAllItems();
+		}
+		
+		private function deleteSelected(e:Event):void 
+		{
+			for each(var item:DataGridItem in fileGrid.grid.match("select", true))
+			{
+				fileGrid.grid.removeItem(item);
+			}
+		}
+		
+		private function addLine(e:Event):void 
+		{
+			fileGrid.addItem(null, null, true);
+		}
+		
+		private function combo_selectHandler(e:Event):void 
+		{
+			outputFolder.enabled = (outputCombo.selectedIndex == 1);
+		}
+		
+		private function activate():void 
 		{
 			stage.nativeWindow.activate();
 			NativeApplication.nativeApplication.addEventListener(InvokeEvent.INVOKE, invokeHandler);
-		}
-		
-		/**
-		 * なんかうまくいかない
-		 * @param	e
-		 */
-		private function globalErrorHandlere(e:UncaughtErrorEvent):void 
-		{
-			tracer.log(e);
-			tracer.log(e.text);
-			e.preventDefault();
 		}
 		
 		//--------------------------------------------------------------------------
@@ -153,87 +195,21 @@ package project.m3dexporter
 		//
 		//--------------------------------------------------------------------------
 		
-		private function f3d_completeHandler(ba:ByteArray):void 
-		{
-			LocalFile.writeByteArray(outputFile, ba, true);
-			tracer.log(outputFile.nativePath + "に保存しました。");
-			view.setF3DByteArray(outputFile, fileSelector.materialPath, false);
-			
-			user.addConvertedFile(FileUtil.url(outputFile));
-			view.setConvertedFiles(user.convertedFiles);
-			
-			fileSelector.enabled = true;
-			isConverting = false;
-		}
-		
-		private function progressHandler(per:Number):void 
-		{
-			progressBar.value = per;
-		}
-		
-		private function scene_completeHandler():void 
-		{
-			//fpv.setCameraMatrix(user.cameraMatrix);
-		}
-		
-		/**
-		 * 必要なら変換していいかどうかチェックする
-		 */
-		private function confirmConvert():void 
-		{
-			if (isConverting) return;
-			
-			currentFile = FileUtil.toFile(fileSelector.filePath);
-			outputFile = FileUtil.changeExtension(currentFile, "m3d");
-			
-			if (user.menuOption.checkOverride && outputFile.exists)
-			{
-				isConverting = true;
-				Modal.confirm(outputFile.nativePath + "は既に存在しています。\n　上書きしますか？", convert, convert_cancelHandler);
-				return;
-			}
-			convert();
-		}
-		
-		private function convert_cancelHandler():void
-		{
-			isConverting = false;
-			fileSelector.enabled = true;
-		}
-		
-		/**
-		 * 事前に設定しておいたcurrentFileを変換する
-		 */
-		private function convert():void
-		{
-			isConverting = true;
-			fileSelector.enabled = false;
-			
-			tracer.clear();
-			var option:M3DExportOption = setting.getOption();
-			
-			if (option.exportTangent4 && (!option.exportUV || !option.exportNormal))
-			{
-				Modal.alert("接線＆従法線を書き出す場合は、UVと頂点法線も書き出してください。");
-				return;
-			}
-			
-			fileSelector.applyOption(option);
-			var materialDir:File = currentFile.parent.resolvePath(fileSelector.materialPath);
-			converter.convert(currentFile, option, materialDir);
-		}
-		
 		/**
 		 * 終了直前に実行される
 		 */
 		private function savingCallback():void 
 		{
-			//保存データ
-			setting.save(user);
-			user.fbxPath = fileSelector.filePath;
-			user.materialPath = fileSelector.materialPath;
-			user.cameraMatrix = view.scene.camera.matrix.clone();
-			fileSelector.applyOption(user.option);
+			user.outputFolder = outputFolder.value;
+			user.outputMode = outputCombo.selectedIndex;
+			user.itemList.length = 0;
+			var n:int = fileGrid.grid.items.length;
+			for (var i:int = 0; i < n; i++) 
+			{
+				var row:RowItem = fileGrid.grid.items[i].extra;
+				row.save();
+				user.itemList.push(row.data);
+			}
 		}
 		
 		/**
@@ -242,29 +218,34 @@ package project.m3dexporter
 		 */
 		private function invokeHandler(e:InvokeEvent):void 
 		{
-			if (!e.arguments.length) return;
+			if (e.arguments.length == 0) return;
 			
 			var file:File = FileUtil.toFile(e.arguments[0]);
 			if (file == null) return;
 			
 			var ext:String = file.extension? file.extension.toLowerCase() : "";
 			
-			if (ext == "m3d")
-			{
-				view.setF3DByteArray(file, "", true);
-			}
-			
 			if (ext == "fbx" || ext == "dae")
 			{
-				fileSelector.filePath = FileUtil.url(file);
+				fileGrid.addItem(null, file, true);
 				stage.nativeWindow.activate();
-				
-				//自動でパースする場合
-				if (user.menuOption.autoParse)
-				{
-					confirmConvert();
-				}
 			}
+		}
+		
+		public function getOutputFolder(item:ConvertItem):File
+		{
+			
+			if (outputCombo.selectedIndex == 0)
+			{
+				var file:File = FileUtil.toFile(item.sourceFile);
+				if (file == null) return null;
+				return file.parent;
+			}
+			
+			var folder:File = FileUtil.toFile(outputFolder.value);
+			if (folder == null || folder.isDirectory == false) return null;
+			
+			return folder;
 		}
 		
 		//--------------------------------------------------------------------------
@@ -285,5 +266,5 @@ package project.m3dexporter
 		}
 		
 	}
-	
+
 }
