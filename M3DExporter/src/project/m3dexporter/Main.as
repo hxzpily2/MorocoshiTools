@@ -120,7 +120,7 @@ package project.m3dexporter
 			outputCombo.addItem("ソースと同じ場所");
 			outputCombo.addItem("フォルダを指定");
 			outputCombo.addEventListener(Event.SELECT, combo_selectHandler);
-			Bit101Util.adjustComboList(outputCombo, 10, false);
+			Bit101Util.adjustComboList(outputCombo, 10, true);
 			outputFolder = new InputFile();
 			outputFolder.inputMode = InputFile.MODE_FOLDER;
 			
