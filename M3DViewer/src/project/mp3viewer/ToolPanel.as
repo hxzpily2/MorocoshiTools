@@ -4,12 +4,14 @@ package project.mp3viewer
 	import com.bit101.components.HBox;
 	import flash.display.Sprite;
 	import flash.events.Event;
+	import flash.filters.GlowFilter;
 	import net.morocoshi.common.graphics.Create;
 	import net.morocoshi.common.graphics.Palette;
 	import net.morocoshi.common.timers.Stopwatch;
 	import net.morocoshi.components.minimal.Bit101Util;
 	import net.morocoshi.components.minimal.BitmapCheckBox;
 	import net.morocoshi.components.minimal.buttons.BitmapButton;
+	import net.morocoshi.components.minimal.color.ColorSelector;
 	import net.morocoshi.moja3d.animation.AnimationPlayer;
 	import net.morocoshi.moja3d.resources.TextureResource;
 	
@@ -36,6 +38,7 @@ package project.mp3viewer
 		private var gridIcon:BitmapCheckBox;
 		private var cameraComboBox:ComboBox;
 		private var resizeIcon:BitmapButton;
+		private var colorSelector:ColorSelector;
 		
 		public function ToolPanel() 
 		{
@@ -67,6 +70,8 @@ package project.mp3viewer
 			playIcon = new BitmapCheckBox(playerBox, 0, 0, new Asset.Play, new Asset.Pause, play_clickHandler);
 			new BitmapButton(playerBox, 0, 0, new Asset.Stop, null, null, stop_clickHandler);
 			loopIcon = new BitmapCheckBox(playerBox, 0, 0, Asset.image(Asset.Loop, 0.3), new Asset.Loop, loop_clickHandler);
+			colorSelector = new ColorSelector(box, 0, 5, 0x303030, color_selectHadnler);
+			colorSelector.filters = [new GlowFilter(0xcccccc, 1, 2, 2, 100)];
 			
 			for each(var bb:BitmapButton in BitmapButton.getAllBitmapButton(container))
 			{
@@ -79,6 +84,11 @@ package project.mp3viewer
 			
 			playerBox.enabled = false;
 			folderIcon.enabled = false;
+		}
+		
+		private function color_selectHadnler(e:Event):void 
+		{
+			Main.current.view.scene.view.backgroundColor = colorSelector.value;
 		}
 		
 		private function resize_clickHandler(e:Event):void 
