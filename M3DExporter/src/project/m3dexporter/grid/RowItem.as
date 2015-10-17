@@ -22,7 +22,7 @@ package project.m3dexporter.grid
 	import project.m3dexporter.asset.Asset;
 	import project.m3dexporter.data.ConvertItem;
 	import project.m3dexporter.Main;
-	import project.m3dexporter.Settings;
+	import project.m3dexporter.setting.Settings;
 	/**
 	 * ...
 	 * @author tencho
@@ -202,8 +202,21 @@ package project.m3dexporter.grid
 		
 		private function convert_clickHandler(e:MouseEvent):void 
 		{
-			Main.current.tracer.clear();
-			Main.current.convertManager.addRow(this);
+			var me:RowItem = this;
+			var output:File = getOutputFile();
+			if (Main.current.user.checkOverride && output && output.exists)
+			{
+				Modal.confirm(output.nativePath + "\nは既に存在するファイルですが上書きしますか？", function():void
+				{
+					Main.current.tracer.clear();
+					Main.current.convertManager.addRow(me);
+				});
+			}
+			else
+			{
+				Main.current.tracer.clear();
+				Main.current.convertManager.addRow(this);
+			}
 		}
 		
 		public function setEnabled(enabled:Boolean):void 

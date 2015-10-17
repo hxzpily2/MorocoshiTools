@@ -1,4 +1,4 @@
-package project.m3dexporter 
+package project.m3dexporter.setting 
 {
 	import com.bit101.components.CheckBox;
 	import com.bit101.components.PushButton;
@@ -15,9 +15,11 @@ package project.m3dexporter
 	import net.morocoshi.components.balloon.MouseOverLabel;
 	import net.morocoshi.components.minimal.input.InputFile;
 	import net.morocoshi.components.minimal.layout.LayoutCell;
+	import net.morocoshi.components.minimal.layout.PaddingBox;
 	import net.morocoshi.components.minimal.ScrollPane;
 	import net.morocoshi.moja3d.loader.exporters.M3DExportOption;
 	import project.m3dexporter.data.UserFile;
+	import project.m3dexporter.Main;
 	
 	/**
 	 *  
@@ -50,7 +52,6 @@ package project.m3dexporter
 		private var useFreezeLayer:CheckBox;
 		private var moveToRoot:CheckBox;
 		private var input:InputFile;
-		private var pane:ScrollPane;
 		private var optimizeSurface:CheckBox;
 		private var extractObjectParam:CheckBox;
 		private var objectParamsButton:PushButton;
@@ -58,6 +59,7 @@ package project.m3dexporter
 		private var textArea:TextArea;
 		private var lockUserPropertyObject:CheckBox;
 		private var lockSkinEmptyObject:CheckBox;
+		private var fixMaxStyleTexture:CheckBox;
 		
 		//private var simpleTangent4:CheckBox;
 		//private var useShow:CheckBox;
@@ -79,12 +81,11 @@ package project.m3dexporter
 			
 			window.stage.scaleMode = "noScale";
 			window.stage.align = "TL";
-			window.stage.stageWidth = 300;
-			window.stage.stageHeight = 480;
-			window.stage.addEventListener(Event.RESIZE, stage_resizeHandler);
+			window.stage.stageWidth = 440;
+			window.stage.stageHeight = 500;
+			window.stage.color = 0xF3F3F3;
 			
-			pane = new ScrollPane(window.stage, 0, 0);
-			var box:VBox = new VBox(pane.content);
+			var box:VBox = new VBox(window.stage, 20, 20);
 			box.spacing = 12;
 			
 			var rgb:uint = 0xdd2244;
@@ -94,14 +95,16 @@ package project.m3dexporter
 			exportLight = createCheckBox(box, "ライトを書き出す", rgb);
 			exportTransparentMap = createCheckBox(box, "不透明度マップを書き出す", rgb);
 			exportNormalMap = createCheckBox(box, "ノーマルマップを書き出す", rgb);
+			fixMaxStyleTexture = createCheckBox(box, "拡散反射と不透明マップに同じPNGが貼られていた場合に不透明を消す", rgb);
 			//exportReflectionMap = createCheckBox(box, "反射マップを書き出す", rgb);
 			
+			MouseOverLabel.instance.setLabel(fixMaxStyleTexture, "MAX上で透過PNGをプレビューする際に\n拡散反射と不透明の両方に同じPNG画像を貼る事があり\nその設定のまま書き出されてしまったマテリアルの対策用です。");
 			MouseOverLabel.instance.setLabel(useHideLayer, "非表示状態になっているレイヤーに配置した\nオブジェクトを書き出すかを設定します。");
 			MouseOverLabel.instance.setLabel(useFreezeLayer, "フリーズ状態になっているレイヤーに配置した\nオブジェクトを書き出すかを設定します。");
 			MouseOverLabel.instance.setLabel(exportCamera, "シーン内のカメラを書き出すかを設定します。");
 			MouseOverLabel.instance.setLabel(exportLight, "シーン内のライトを書き出すかを設定します。\n現時点で書き出し可能なライトは平行光源と環境光のみです。");
-			MouseOverLabel.instance.setLabel(exportTransparentMap, "マテリアルに設定されている不透明度マップを書き出すかを設定します。");
-			MouseOverLabel.instance.setLabel(exportNormalMap, "マテリアルに設定されているノーマルマップを書き出すかを設定します。");
+			MouseOverLabel.instance.setLabel(exportTransparentMap, "マテリアルに設定されている不透明度マップを\n書き出すかを設定します。");
+			MouseOverLabel.instance.setLabel(exportNormalMap, "マテリアルに設定されているノーマルマップを\n書き出すかを設定します。");
 			//MouseOverLabel.instance.setLabel(exportReflectionMap, "マテリアルに設定されている反射マップを書き出すかを設定します。");
 			
 			rgb = 0xee5500;
@@ -118,7 +121,7 @@ package project.m3dexporter
 			//removeDirectory = createCheckBox(box, "マテリアルパスのフォルダを削る", rgb);
 			
 			MouseOverLabel.instance.setLabel(useVisible, "ユーザー定義プロパティがvisible=false\nになっているオブジェクトを非表示状態にします。");
-			MouseOverLabel.instance.setLabel(autoRepeat, "各三角ポリゴンにおいて、\nUVが0～1の範囲に収まっているものはマテリアルのタイリングをリピート無しに、\nUVが0～1の範囲外のものはリピートを有りにします。\nマテリアルの両端の色が違いリピートすると反対側の色が見えてしまう場合に\n部分的にリピートを無効にする事で見た目が改善される可能性があります。\nなおマテリアル数が増えるためレンダリングの負荷は高くなります。");
+			MouseOverLabel.instance.setLabel(autoRepeat, "各三角ポリゴンにおいてマテリアルのタイリングを、\nUVが0～1の範囲に収まっているものはリピート無しに、\nUVが0～1の範囲外のものはリピートを有りにします。\nマテリアルの両端の色が違いリピートすると反対側の色が見えてしまう場合に\n部分的にリピートを無効にする事で見た目が改善される可能性があります。\nなおマテリアル数が増えるためレンダリングの負荷は高くなります。");
 			//MouseOverLabel.instance.setLabel(removeDirectory, "マテリアルが使用しているテクスチャマップパスのフォルダを削りファイル名だけにします。\nマテリアルフォルダを指定したい場合はこれを有効にする必要があります。");
 			
 			rgb = 0x4444dd;
@@ -129,30 +132,31 @@ package project.m3dexporter
 			optimizeSurface = createCheckBox(box, "同一マテリアルのサーフェイスを統合する", rgb);
 			moveToRoot = createCheckBox(box, "可能なものは全てルート階層に移動する", rgb);
 			MouseOverLabel.instance.setLabel(deleteEmptyObject, "中に何も入っていない空のコンテナオブジェクトを削除します。");
-			MouseOverLabel.instance.setLabel(optimizeSurface, "マテリアルとユーザープロパティが同じメッシュ同士を\nアタッチしてオブジェクト数を減らし、レンダリング負荷を軽減します。");
+			MouseOverLabel.instance.setLabel(optimizeSurface, "マテリアルとユーザープロパティが同じメッシュ同士を\nアタッチしてオブジェクト数を減らし、\nレンダリング負荷を軽減します。");
 			
 			rgb = 0x116600;
 			extractObjectParam = createCheckBox(box, "オブジェクトのカスタムアトリビュートを\nユーザーデータとして抽出する", rgb);
 			extractObjectParam.height += 14;
 			objectParamsButton = new PushButton(box, 0, 0, "", params_clickHandler);
 			objectParamsButton.setSize(220, 25);
+			MouseOverLabel.instance.setLabel(extractObjectParam, "MAYAから書き出したFBXにおいて、\nカスタムアトリビュートをユーザーデータ化します。");
 			
 			//exportTangent4 = new CheckBox(box, 0, 0, "Tangent/Binormalを書き出す");
 			//useShow = new CheckBox(box, 0, 0, "△オブジェクトのshowプロパティを表示に反映");
 			//moveBasePoint = new CheckBox(box, 0, 0, "✓基点をAABBの中心に移動する");
 			//simpleTangent4 = new CheckBox(box, 0, 0, "△タンジェント情報を適当にしてサイズを減らす");
-			
-			pane.watchContentResize = true;
-			stage_resizeHandler(null);
 		}
 		
 		private function window_closingHandler(e:Event):void 
 		{
+			Main.current.stage.addChild(MouseOverLabel.instance.container);
+			
 			option.exportCamera = exportCamera.selected;
 			option.exportLight = exportLight.selected;
 			option.exportNormal = exportNormalMap.selected;
 			//option.exportReflection = exportReflectionMap.selected;
 			option.exportTransparent = exportTransparentMap.selected;
+			option.fixMaxStylePngTexture = fixMaxStyleTexture.selected;
 			
 			option.exportUV = exportVertexUV.selected;
 			option.exportNormal = exportVertexNormal.selected;
@@ -198,6 +202,7 @@ package project.m3dexporter
 			exportTransparentMap.selected = option.exportTransparent;
 			//exportReflectionMap.selected = option.exportReflection;
 			exportNormalMap.selected = option.exportNormal;
+			fixMaxStyleTexture.selected = option.fixMaxStylePngTexture;
 			
 			exportVertexUV.selected = option.exportUV;
 			exportVertexNormal.selected = option.exportNormal;
@@ -213,6 +218,7 @@ package project.m3dexporter
 			
 			updateButtonLabel();
 			
+			window.stage.addChild(MouseOverLabel.instance.container);
 			ModalManager.activate(window);
 			WindowUtil.moveCenter(window);
 		}
@@ -257,11 +263,6 @@ package project.m3dexporter
 				option.objectParamList.push(items[i].replace(/\n|\r|\s/g, ""));
 			}
 			updateButtonLabel();
-		}
-		
-		private function stage_resizeHandler(e:Event):void 
-		{
-			pane.setSize(window.stage.stageWidth, window.stage.stageHeight);
 		}
 		
 	}

@@ -15,6 +15,7 @@ package project.m3dexporter
 	import flash.filesystem.File;
 	import flash.utils.ByteArray;
 	import net.morocoshi.air.application.ApplicationData;
+	import net.morocoshi.air.components.minimal.Modal;
 	import net.morocoshi.air.drop.DragDrop;
 	import net.morocoshi.air.drop.DropEvent;
 	import net.morocoshi.air.files.FileUtil;
@@ -128,15 +129,18 @@ package project.m3dexporter
 			outputCombo.selectedIndex = user.outputMode;
 			
 			var output:LayoutCell = new LayoutCell(this, 0, 0, LayoutCell.ALIGN_LEFT, false);
-			output.addCell(new PaddingBox(null, 0, 0, new Label(null, 0, 0, "書き出し先"), 5, 0, 0, 5), "80px");
+			output.addCell(new PaddingBox(null, 0, 0, new Label(null, 0, 0, "書き出し先"), 5, 0, 0, 10), "80px");
 			output.addCell(outputCombo, "150px");
 			output.addCell(new Component(), "5px");
 			output.addCell(outputFolder, "*");
 			output.addCell(new Component(), "5px");
 			output.addCell(new PushButton(null, 0, 0, "一括変換", convertAll), "140px").transform.colorTransform = Palette.getMultiplyColor(0xffdd77, 1);
+			output.addCell(new Component(), "10px");
 			
 			rootCell.addCell(tracer, "200px");
+			rootCell.addCell(new Component(), "10px");
 			rootCell.addCell(output, "30px");
+			rootCell.addCell(new Component(), "10px");
 			
 			appMenu = new AppMenu();
 			appMenu.init(user);
@@ -153,8 +157,31 @@ package project.m3dexporter
 		
 		private function convertAll(e:Event):void 
 		{
-			Main.current.tracer.clear();
-			for each(var item:DataGridItem in fileGrid.grid.items)
+			if (user.checkOverride)
+			{
+				var numOverride:int = 0;
+				var item:DataGridItem;
+				for each(item in fileGrid.grid.items)
+				{
+					var file:File = RowItem(item.extra).getOutputFile();
+					if (file && file.exists) numOverride++;
+				}
+				if (numOverride > 0)
+				{
+					Modal.confirm(numOverride + "件のファイルが既に存在しますが上書きしますか？", function():void
+					{
+						tracer.clear();
+						for each(item in fileGrid.grid.items)
+						{
+							convertManager.addRow(item.extra);
+						}
+					});
+					return;
+				}
+			}
+			
+			tracer.clear();
+			for each(item in fileGrid.grid.items)
 			{
 				convertManager.addRow(item.extra);
 			}
@@ -162,15 +189,23 @@ package project.m3dexporter
 		
 		private function deleteAll(e:Event):void
 		{
-			fileGrid.grid.removeAllItems();
+			if (fileGrid.grid.items.length == 0) return;
+			
+			Modal.confirm("全ての行を削除しますがよろしいですか？", fileGrid.grid.removeAllItems);
 		}
 		
 		private function deleteSelected(e:Event):void 
 		{
-			for each(var item:DataGridItem in fileGrid.grid.match("select", true))
+			var selected:Vector.<DataGridItem> = fileGrid.grid.match("select", true);
+			if (selected.length == 0) return;
+			
+			Modal.confirm("選択されている行をまとめて削除しますがよろしいですか？", function():void
 			{
-				fileGrid.grid.removeItem(item);
-			}
+				for each(var item:DataGridItem in selected)
+				{
+					fileGrid.grid.removeItem(item);
+				}
+			});
 		}
 		
 		private function addLine(e:Event):void 

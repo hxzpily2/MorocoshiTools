@@ -115,6 +115,7 @@ package project.m3dexporter.converter
 		{
 			var colladaParser:ColladaParser = new ColladaParser();
 			var colladaScene:ColladaScene = colladaParser.parse(xml, option.toColladaOption());
+			errorList = errorList.concat(colladaParser.collector.getMiscLogList());
 			onLog("完了！");
 			onLog("==========================================");
 			var log:String = colladaParser.collector.getLog();
