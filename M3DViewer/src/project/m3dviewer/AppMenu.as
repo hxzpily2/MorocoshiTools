@@ -1,4 +1,4 @@
-package project.mp3viewer 
+package project.m3dviewer 
 {
 	import flash.filesystem.File;
 	import net.morocoshi.air.files.FileUtil;

@@ -1,17 +1,23 @@
-package project.mp3viewer 
+package project.m3dviewer 
 {
+	import flash.display.Sprite;
 	import flash.display.Stage;
 	import flash.display3D.Context3DProfile;
 	import flash.events.Event;
 	import net.morocoshi.air.components.minimal.Modal;
 	import net.morocoshi.air.files.FileUtil;
 	import net.morocoshi.common.loaders.tfp.events.TFPErrorEvent;
+	import net.morocoshi.common.math.random.Random;
 	import net.morocoshi.moja3d.agal.AGALCache;
 	import net.morocoshi.moja3d.config.LightSetting;
+	import net.morocoshi.moja3d.materials.Material;
+	import net.morocoshi.moja3d.materials.preset.FillMaterial;
 	import net.morocoshi.moja3d.objects.AmbientLight;
 	import net.morocoshi.moja3d.objects.Camera3D;
 	import net.morocoshi.moja3d.objects.DirectionalLight;
 	import net.morocoshi.moja3d.objects.Object3D;
+	import net.morocoshi.moja3d.objects.UnionMesh;
+	import net.morocoshi.moja3d.primitives.Cube;
 	import net.morocoshi.moja3d.resources.ExternalTextureResource;
 	import net.morocoshi.moja3d.resources.Resource;
 	import net.morocoshi.moja3d.resources.TextureResourceLoader;
@@ -37,6 +43,7 @@ package project.mp3viewer
 		private var subLight:DirectionalLight;
 		private var ambientLight:AmbientLight;
 		private var gridMesh:GridMesh;
+		private var sprite:Sprite;
 		
 		//--------------------------------------------------------------------------
 		//
@@ -122,7 +129,6 @@ package project.mp3viewer
 			scene.root.addChild(modelContainer);
 			scene.root.addChild(lightContainer);
 			scene.root.addChild(gridMesh);
-			
 		}
 		
 		/**

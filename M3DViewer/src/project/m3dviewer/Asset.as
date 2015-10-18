@@ -1,4 +1,4 @@
-package project.mp3viewer 
+package project.m3dviewer 
 {
 	import flash.display.Bitmap;
 	import flash.display.BitmapData;

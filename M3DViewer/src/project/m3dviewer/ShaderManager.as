@@ -1,4 +1,4 @@
-package project.mp3viewer 
+package project.m3dviewer 
 {
 	import flash.display.BlendMode;
 	import net.morocoshi.moja3d.shaders.render.EnvironmentShader;

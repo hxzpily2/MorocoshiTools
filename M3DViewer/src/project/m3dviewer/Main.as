@@ -1,4 +1,4 @@
-package project.mp3viewer
+package project.m3dviewer
 {
 	import com.bit101.components.Style;
 	import flash.desktop.NativeApplication;

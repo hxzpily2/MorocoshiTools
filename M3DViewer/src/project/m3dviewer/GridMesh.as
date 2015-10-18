@@ -1,7 +1,8 @@
-package project.mp3viewer 
+package project.m3dviewer 
 {
 	import net.morocoshi.moja3d.materials.preset.FillMaterial;
 	import net.morocoshi.moja3d.objects.Object3D;
+	import net.morocoshi.moja3d.objects.UnionMesh;
 	import net.morocoshi.moja3d.primitives.Cube;
 	
 	/**
@@ -9,7 +10,7 @@ package project.mp3viewer
 	 * 
 	 * @author tencho
 	 */
-	public class GridMesh extends Object3D 
+	public class GridMesh extends UnionMesh 
 	{
 		
 		public function GridMesh(width:Number, height:Number, segmentW:int, segmentH:int, thickness:Number) 
@@ -29,6 +30,7 @@ package project.mp3viewer
 				line.y = (height - thickness) * (iy / (segmentH) - 0.5);
 				addChild(line);
 			}
+			update(null, true);
 		}
 		
 	}
