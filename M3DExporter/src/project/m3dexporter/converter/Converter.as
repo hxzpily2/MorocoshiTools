@@ -1,6 +1,7 @@
 package project.m3dexporter.converter 
 {
 	import flash.display.BitmapData;
+	import flash.display.JPEGEncoderOptions;
 	import flash.display.PNGEncoderOptions;
 	import flash.events.ProgressEvent;
 	import flash.events.TextEvent;
@@ -10,6 +11,7 @@ package project.m3dexporter.converter
 	import net.morocoshi.air.files.FileUtil;
 	import net.morocoshi.air.files.LocalFile;
 	import net.morocoshi.common.data.ByteArrayUtil;
+	import net.morocoshi.common.encoders.JPGEncoder;
 	import net.morocoshi.common.graphics.BitmapUtil;
 	import net.morocoshi.common.graphics.EdgeExtruder;
 	import net.morocoshi.common.loaders.ClassAliasUtil;
@@ -236,7 +238,7 @@ package project.m3dexporter.converter
 			
 			if (option.exportImage)
 			{
-				if (option.fixImage)
+				if (option.fixImageEnabled)
 				{
 					fixImageEdge();
 				}
@@ -348,19 +350,41 @@ package project.m3dexporter.converter
 		{
 			//var fixed:Vector.<BitmapData> = EdgeExtruder.splitAndExtrude(bitmap, 4, false, option.fixImageThreshold);
 			var imageID:String = FileUtil.getFileID(current.file.name);
-			var ba1:ByteArray = diffuse.encode(diffuse.rect, new PNGEncoderOptions(!true));
-			var ba2:ByteArray = opacity.encode(opacity.rect, new PNGEncoderOptions(!true));
-			var diffuseTFP:TFPFile = new TFPFile(imageID + "__diffuse__.png", ba1, TFPAssetType.IMAGE);
-			var opcityTFP:TFPFile = new TFPFile(imageID + "__opacity__.png", ba2, TFPAssetType.IMAGE);
+			var diffusePNG:ByteArray = diffuse.encode(diffuse.rect, new PNGEncoderOptions(false));
+			var diffuseJPG:ByteArray = diffuse.encode(diffuse.rect, new JPEGEncoderOptions(option.convertJpgQuality));
+			var opacityPNG:ByteArray = opacity.encode(opacity.rect, new PNGEncoderOptions(false));
+			var opacityJPG:ByteArray = opacity.encode(opacity.rect, new JPEGEncoderOptions(option.convertJpgQuality));
+			
+			var diffuseTFP:TFPFile;
+			var opcityTFP:TFPFile;
+			if (diffusePNG.length < diffuseJPG.length)
+			{
+				diffuseTFP = new TFPFile(imageID + "__diffuse__.png", diffusePNG, TFPAssetType.IMAGE);
+			}
+			else
+			{
+				diffuseTFP = new TFPFile(imageID + "__diffuse__.jpg", diffuseJPG, TFPAssetType.IMAGE);
+			}
+			if (opacityPNG.length < opacityJPG.length)
+			{
+				opcityTFP = new TFPFile(imageID + "__opacity__.png", opacityPNG, TFPAssetType.IMAGE);
+			}
+			else
+			{
+				opcityTFP = new TFPFile(imageID + "__opacity__.jpg", opacityJPG, TFPAssetType.IMAGE);
+			}
+			
 			imageFolder.files.push(diffuseTFP);
 			imageFolder.files.push(opcityTFP);
-			onLog(current.file.name + "のアルファを修正しました(" + int((ba1.length + ba2.length) / 1024) + "KB)");
+			onLog(current.file.name + "のアルファを修正しました。");
 			
 			nextExtrude();
 		}
 		
+		private var requestCount:int;
 		private function exportImages():void
 		{
+			requestCount = 0;
 			for each(var name:String in m3dScene.getAllMaterialFileName())
 			{
 				if (exsistPngPath[name]) continue;
@@ -384,8 +408,16 @@ package project.m3dexporter.converter
 						var imageFile:File = FileUtil.changeExtension(rawFile, extList[i]);
 						if (imageFile.exists)
 						{
-							var tfp:TFPFile = new TFPFile(imageFile.name, LocalFile.readByteArray(imageFile), TFPAssetType.IMAGE);
-							imageFolder.files.push(tfp);
+							if (option.convertJpgEnabled)
+							{
+								requestCount++;
+								LocalFile.readBitmapData(imageFile, loadImage_completeHandler);
+							}
+							else
+							{
+								var tfp:TFPFile = new TFPFile(imageFile.name, LocalFile.readByteArray(imageFile), TFPAssetType.IMAGE);
+								imageFolder.files.push(tfp);
+							}
 							exist = true;
 							break;
 						}
@@ -398,7 +430,31 @@ package project.m3dexporter.converter
 				}
 			}
 			
-			lastPhase();
+			if (requestCount == 0)
+			{
+				lastPhase();
+			}
+		}
+		
+		/**
+		 * 画像を読み込んだらJPG化する
+		 * @param	file
+		 * @param	image
+		 */
+		private function loadImage_completeHandler(file:File, image:BitmapData):void 
+		{
+			var raw:ByteArray = LocalFile.readByteArray(file);
+			var jpg:ByteArray = image.encode(image.rect, new JPEGEncoderOptions(option.convertJpgQuality));
+			var useJPG:Boolean = (jpg.length < raw.length && BitmapUtil.isTransparent(image) == false);
+			var bytes:ByteArray = useJPG? jpg : raw;
+			var name:String = useJPG? FileUtil.changeExtension(file, "jpg").name : file.name;
+			var tfp:TFPFile = new TFPFile(name, bytes, TFPAssetType.IMAGE);
+			imageFolder.files.push(tfp);
+			requestCount--;
+			if (requestCount == 0)
+			{
+				lastPhase();
+			}
 		}
 		
 		private function lastPhase():void

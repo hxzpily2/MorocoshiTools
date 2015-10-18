@@ -1,6 +1,8 @@
 package project.m3dexporter.setting 
 {
 	import com.bit101.components.CheckBox;
+	import com.bit101.components.Component;
+	import com.bit101.components.HBox;
 	import com.bit101.components.PushButton;
 	import com.bit101.components.TextArea;
 	import com.bit101.components.VBox;
@@ -14,6 +16,7 @@ package project.m3dexporter.setting
 	import net.morocoshi.common.graphics.Palette;
 	import net.morocoshi.components.balloon.MouseOverLabel;
 	import net.morocoshi.components.minimal.input.InputFile;
+	import net.morocoshi.components.minimal.input.InputNumber;
 	import net.morocoshi.components.minimal.layout.LayoutCell;
 	import net.morocoshi.components.minimal.layout.PaddingBox;
 	import net.morocoshi.components.minimal.ScrollPane;
@@ -60,6 +63,8 @@ package project.m3dexporter.setting
 		private var lockUserPropertyObject:CheckBox;
 		private var lockSkinEmptyObject:CheckBox;
 		private var fixMaxStyleTexture:CheckBox;
+		private var convertJpgEnabled:CheckBox;
+		private var convertJpgQuality:InputNumber;
 		
 		//private var simpleTangent4:CheckBox;
 		//private var useShow:CheckBox;
@@ -82,7 +87,7 @@ package project.m3dexporter.setting
 			window.stage.scaleMode = "noScale";
 			window.stage.align = "TL";
 			window.stage.stageWidth = 440;
-			window.stage.stageHeight = 500;
+			window.stage.stageHeight = 530;
 			window.stage.color = 0xF3F3F3;
 			
 			var box:VBox = new VBox(window.stage, 20, 20);
@@ -134,9 +139,16 @@ package project.m3dexporter.setting
 			MouseOverLabel.instance.setLabel(deleteEmptyObject, "中に何も入っていない空のコンテナオブジェクトを削除します。");
 			MouseOverLabel.instance.setLabel(optimizeSurface, "マテリアルとユーザープロパティが同じメッシュ同士を\nアタッチしてオブジェクト数を減らし、\nレンダリング負荷を軽減します。");
 			
+			var hbox:HBox = new HBox(box, 0, 0);
+			convertJpgEnabled = createCheckBox(hbox, "テクスチャ画像をJPG変換する", rgb);
+			convertJpgQuality = new InputNumber(hbox, 0, -3, 90);
+			convertJpgQuality.minValue = 0;
+			convertJpgQuality.maxValue = 100;
+			convertJpgQuality.step = 1;
+			convertJpgQuality.setSize(40, 20);
+			
 			rgb = 0x116600;
-			extractObjectParam = createCheckBox(box, "オブジェクトのカスタムアトリビュートを\nユーザーデータとして抽出する", rgb);
-			extractObjectParam.height += 14;
+			extractObjectParam = createCheckBox(box, "オブジェクトのカスタムアトリビュートをユーザーデータとして抽出", rgb);
 			objectParamsButton = new PushButton(box, 0, 0, "", params_clickHandler);
 			objectParamsButton.setSize(220, 25);
 			MouseOverLabel.instance.setLabel(extractObjectParam, "MAYAから書き出したFBXにおいて、\nカスタムアトリビュートをユーザーデータ化します。");
@@ -175,6 +187,8 @@ package project.m3dexporter.setting
 			option.lockSkinEmptyObject = lockSkinEmptyObject.selected;
 			option.moveToRoot = moveToRoot.selected;
 			option.optimizeSurface = optimizeSurface.selected;
+			option.convertJpgEnabled = convertJpgEnabled.selected;
+			option.convertJpgQuality = convertJpgQuality.value;
 			
 			option.moveBasePoint = false;//moveBasePoint.selected;
 			option.useShow = false;// useShow.selected;
@@ -215,6 +229,8 @@ package project.m3dexporter.setting
 			//removeDirectory.selected = option.removeDirectory;
 			moveToRoot.selected = option.moveToRoot;
 			optimizeSurface.selected = option.optimizeSurface;
+			convertJpgEnabled.selected = option.convertJpgEnabled;
+			convertJpgQuality.value = option.convertJpgQuality;
 			
 			updateButtonLabel();
 			
@@ -223,7 +239,7 @@ package project.m3dexporter.setting
 			WindowUtil.moveCenter(window);
 		}
 		
-		private function createCheckBox(parent:VBox, label:String, rgb:uint):CheckBox 
+		private function createCheckBox(parent:Component, label:String, rgb:uint):CheckBox 
 		{
 			var check:CheckBox = new CheckBox(parent, 0, 0, label);
 			check.getChildAt(0).y += 1;

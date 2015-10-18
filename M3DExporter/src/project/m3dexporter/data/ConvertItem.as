@@ -33,7 +33,7 @@ package project.m3dexporter.data
 			option.exportAnimation = exportAnimation;
 			option.exportModel = exportModel;
 			option.exportImage = exportImage;
-			option.fixImage = fixPngEdge;
+			option.fixImageEnabled = fixPngEdge;
 			option.fixImageThreshold = threshold;
 			option.removeDirectory = ignoreFolder;
 			return option;
