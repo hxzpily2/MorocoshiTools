@@ -336,7 +336,7 @@ package project.m3dexporter.converter
 			exsistPngPath[material.opacityPath] = true;
 			
 			edgeExtruder = new EdgeExtruder();
-			edgeExtruder.splitAndExtrudeAsync(current.bitmap, 4, false, option.fixImageThreshold, edgeExtruder_completeHandler, edgeExtruder_progressHandler);			
+			edgeExtruder.splitAndExtrudeAsync(current.bitmap, 8, option.fixImageThreshold, edgeExtruder_completeHandler, edgeExtruder_progressHandler);			
 		}
 		
 		private function edgeExtruder_progressHandler(per:Number):void 

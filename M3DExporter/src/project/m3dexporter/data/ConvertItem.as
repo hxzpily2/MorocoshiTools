@@ -20,7 +20,7 @@ package project.m3dexporter.data
 		public var exportImage:Boolean = true;
 		public var exportAnimation:Boolean = true;
 		public var fixPngEdge:Boolean = false;
-		public var threshold:uint = 0xfe;
+		public var threshold:uint = 10;
 		
 		public function ConvertItem() 
 		{
