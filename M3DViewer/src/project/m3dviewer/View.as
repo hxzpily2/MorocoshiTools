@@ -4,6 +4,7 @@ package project.m3dviewer
 	import flash.display.Stage;
 	import flash.display3D.Context3DProfile;
 	import flash.events.Event;
+	import flash.geom.Vector3D;
 	import net.morocoshi.air.components.minimal.Modal;
 	import net.morocoshi.air.files.FileUtil;
 	import net.morocoshi.common.loaders.tfp.events.TFPErrorEvent;
@@ -44,6 +45,8 @@ package project.m3dviewer
 		private var ambientLight:AmbientLight;
 		private var gridMesh:GridMesh;
 		private var sprite:Sprite;
+		private var cameraCenterPoint:Vector3D;
+		private var cameraDistance:Number;
 		
 		//--------------------------------------------------------------------------
 		//
@@ -61,12 +64,14 @@ package project.m3dviewer
 			LightSetting.numDirectionalShadow = 0;
 			LightSetting.numOmniLights = 0;
 			
+			cameraCenterPoint = new Vector3D();
+			cameraDistance = 500;
 			scene = new Scene3D();
 			scene.view.antiAlias = 3;
 			scene.view.backgroundColor = 0x303030;
 			scene.view.startAutoResize(stage);
 			//scene.setFPVController(Main.current.background, false, 10, 500, -500, 500);
-			scene.setTPVController(Main.current.background, -45, 30, 500);
+			//scene.setTPVController(Main.current.background, -45, 30, 500);
 			scene.camera.zNear = 0.2;
 			scene.camera.zFar = 100000;
 			
@@ -91,15 +96,6 @@ package project.m3dviewer
 			scene.startRendering();
 			
 			onInit();
-		}
-		
-		private function setCamera(camera:Camera3D):void
-		{
-			//scene.tpv.position = camera.getPosition();
-			//scene.tpv.gazeAt(scene.tpv.position.subtract(camera.getWorldAxisZ(false)), true);
-			
-			scene.camera.fovY = camera.fovY;
-			scene.camera.fovX = camera.fovX;
 		}
 		
 		/**
@@ -163,11 +159,10 @@ package project.m3dviewer
 				loader.upload(basePath, scene.context3D, resources, false);
 			}
 			
-			scene.tpv.gazeAt(modelData.bounds.getCenterPoint(), false);
-			scene.tpv.distance.min = 0.01;
-			scene.tpv.distance.max = modelData.maxBound * 1.0 * 10;
-			scene.tpv.setDistance(modelData.maxBound * 1.0);
-			scene.tpv.notify();
+			cameraCenterPoint = modelData.bounds.getCenterPoint();
+			cameraDistance = modelData.maxBound;// * 1.0 * 10;
+			updateCameraParam();
+			
 			//setCamera(modelData.parser.cameras[0]);
 			//scene.fpv.moveSpeed = modelData.maxBound * 0.02;
 			scene.root.upload(scene.context3D, true, false);
@@ -196,9 +191,51 @@ package project.m3dviewer
 		
 		public function setSize(w:int, h:int):void 
 		{
-			if (!isReady) return;
+			if(!isReady) return;
 			
 			scene.stats.x = w - scene.stats.width;
+		}
+		
+		public function setCamera(camera:Camera3D, mode:String):void 
+		{
+			if (mode == CameraMode.ROTATE)
+			{
+				scene.setTPVController(stage, -45, 15, 100, 0, 0, 0);
+			}
+			if (mode == CameraMode.FLY)
+			{
+				scene.setFPVController(stage, false, 5, 0, 0, 0);
+			}
+			if (camera)
+			{
+				scene.camera.fovY = camera.fovY;
+				scene.camera.fovX = camera.fovX;
+			}
+			else
+			{
+				scene.camera.fovY = 75 / 180 * Math.PI;
+				scene.camera.fovX = 90 / 180 * Math.PI;
+			}
+			updateCameraParam();
+		}
+		
+		private function updateCameraParam():void 
+		{
+			if (scene.fpv)
+			{
+				scene.fpv.moveSpeed = cameraDistance * 0.005;
+				scene.fpv.position = new Vector3D(cameraDistance, cameraDistance, cameraDistance);
+				scene.fpv.lookAt3D(cameraCenterPoint);
+			}
+			
+			if (scene.tpv)
+			{
+				scene.tpv.gazeAt(cameraCenterPoint, false);
+				scene.tpv.distance.min = cameraDistance * 0.001;
+				scene.tpv.distance.max = cameraDistance * 10;
+				scene.tpv.setDistance(cameraDistance);
+				scene.tpv.notify();
+			}
 		}
 		
 		public function set lightEnabled(value:Boolean):void 

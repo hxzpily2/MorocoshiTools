@@ -62,7 +62,8 @@ package project.m3dviewer
 			cameraComboBox.width = 140;
 			cameraComboBox.height = 24;
 			cameraComboBox.addEventListener(Event.SELECT, camera_selectHandler);
-			cameraComboBox.addItem( { label:"（未実装）", camera:null } );
+			cameraComboBox.addItem( { label:"回転モード", camera:null, mode:CameraMode.ROTATE } );
+			cameraComboBox.addItem( { label:"飛行モード", camera:null, mode:CameraMode.FLY } );
 			Bit101Util.adjustComboList(cameraComboBox, 10, true);
 			
 			playerBox = new HBox(box);
@@ -105,6 +106,7 @@ package project.m3dviewer
 			loopIcon.selected = true;
 			gridIcon.selected = true;
 			resizeIcon.enabled = false;
+			cameraComboBox.selectedIndex = 0;
 		}
 		
 		public function setSize(w:Number, h:Number):void
@@ -206,7 +208,8 @@ package project.m3dviewer
 		
 		private function camera_selectHandler(e:Event):void 
 		{
-			
+			var data:Object = cameraComboBox.selectedItem;
+			Main.current.view.setCamera(data.camera, data.mode);
 		}
 		
 		private function play_clickHandler(e:Event):void 
