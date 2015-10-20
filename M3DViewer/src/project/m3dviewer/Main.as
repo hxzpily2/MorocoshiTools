@@ -14,6 +14,7 @@ package project.m3dviewer
 	import net.morocoshi.air.files.FileUtil;
 	import net.morocoshi.common.graphics.Draw;
 	import net.morocoshi.common.timers.FrameTimer;
+	import net.morocoshi.components.balloon.MouseOverLabel;
 	import net.morocoshi.components.minimal.style.Coloration;
 	
 	/**
@@ -67,6 +68,7 @@ package project.m3dviewer
 			stage.addChild(background);
 			stage.addChild(tool.container);
 			stage.addChild(view.scene.stats);
+			stage.addChild(MouseOverLabel.instance.container);
 			stage.addEventListener(Event.RESIZE, stage_resizeHandler);
 			
 			var dd:DragDrop = new DragDrop();

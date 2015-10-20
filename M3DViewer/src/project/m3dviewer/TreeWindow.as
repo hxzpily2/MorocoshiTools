@@ -101,7 +101,7 @@ package project.m3dviewer
 		
 		private function analysisObject(extra:Object3D):void 
 		{
-			addLog(extra);
+			addLog(extra + ":" + extra.worldMatrix.decompose());
 			var mesh:Mesh = extra as Mesh;
 			if (mesh == null) return;
 			

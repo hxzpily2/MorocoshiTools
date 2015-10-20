@@ -8,6 +8,7 @@ package project.m3dviewer
 	import net.morocoshi.common.graphics.Create;
 	import net.morocoshi.common.graphics.Palette;
 	import net.morocoshi.common.timers.Stopwatch;
+	import net.morocoshi.components.balloon.MouseOverLabel;
 	import net.morocoshi.components.minimal.Bit101Util;
 	import net.morocoshi.components.minimal.BitmapCheckBox;
 	import net.morocoshi.components.minimal.buttons.BitmapButton;
@@ -31,6 +32,7 @@ package project.m3dviewer
 		private var timer:Stopwatch;
 		
 		private var playerBox:HBox;
+		private var treeIcon:BitmapButton;
 		private var lightIcon:BitmapCheckBox;
 		private var playIcon:BitmapCheckBox;
 		private var loopIcon:BitmapCheckBox;
@@ -39,6 +41,7 @@ package project.m3dviewer
 		private var cameraComboBox:ComboBox;
 		private var resizeIcon:BitmapButton;
 		private var colorSelector:ColorSelector;
+		private var stopIcon:BitmapButton;
 		
 		public function ToolPanel() 
 		{
@@ -53,7 +56,7 @@ package project.m3dviewer
 			box.spacing = 14;
 			
 			folderIcon = new BitmapButton(box, 0, 0, new Asset.Folder, null, null, folder_clickHandler);
-			new BitmapButton(box, 0, 0, new Asset.Tree, null, null, tree_clickHandler);
+			treeIcon = new BitmapButton(box, 0, 0, new Asset.Tree, null, null, tree_clickHandler);
 			lightIcon = new BitmapCheckBox(box, 0, 0, new Asset.Cube4, new Asset.Cube2, light_clickHandler);
 			gridIcon = new BitmapCheckBox(box, 0, 0, Asset.image(Asset.Grid, 0.3), new Asset.Grid, grid_clickHandler);
 			resizeIcon = new BitmapButton(box, 0, 0, new Asset.Image, null, null, resize_clickHandler);
@@ -69,7 +72,7 @@ package project.m3dviewer
 			playerBox = new HBox(box);
 			playerBox.spacing = 14;
 			playIcon = new BitmapCheckBox(playerBox, 0, 0, new Asset.Play, new Asset.Pause, play_clickHandler);
-			new BitmapButton(playerBox, 0, 0, new Asset.Stop, null, null, stop_clickHandler);
+			stopIcon = new BitmapButton(playerBox, 0, 0, new Asset.Stop, null, null, stop_clickHandler);
 			loopIcon = new BitmapCheckBox(playerBox, 0, 0, Asset.image(Asset.Loop, 0.3), new Asset.Loop, loop_clickHandler);
 			colorSelector = new ColorSelector(box, 0, 5, 0x303030, color_selectHadnler);
 			colorSelector.filters = [new GlowFilter(0xcccccc, 1, 2, 2, 100)];
@@ -85,6 +88,16 @@ package project.m3dviewer
 			
 			playerBox.enabled = false;
 			folderIcon.enabled = false;
+			
+			MouseOverLabel.instance.setLabel(folderIcon, "ファイルの場所を開く");
+			MouseOverLabel.instance.setLabel(treeIcon, "モデルの階層構造");
+			MouseOverLabel.instance.setLabel(lightIcon, "陰影切替");
+			MouseOverLabel.instance.setLabel(gridIcon, "グリッドの表示");
+			MouseOverLabel.instance.setLabel(resizeIcon, "リソース画像書出");
+			MouseOverLabel.instance.setLabel(loopIcon, "ループ");
+			MouseOverLabel.instance.setLabel(playIcon, "再生/一時停止");
+			MouseOverLabel.instance.setLabel(stopIcon, "停止");
+			MouseOverLabel.instance.setLabel(colorSelector, "背景色");
 		}
 		
 		private function color_selectHadnler(e:Event):void 

@@ -200,11 +200,11 @@ package project.m3dviewer
 		{
 			if (mode == CameraMode.ROTATE)
 			{
-				scene.setTPVController(stage, -45, 15, 100, 0, 0, 0);
+				scene.setTPVController(Main.current.background, -45, 15, 100, 0, 0, 0);
 			}
 			if (mode == CameraMode.FLY)
 			{
-				scene.setFPVController(stage, false, 5, 0, 0, 0);
+				scene.setFPVController(Main.current.background, false, 5, 0, 0, 0);
 			}
 			if (camera)
 			{
@@ -224,7 +224,7 @@ package project.m3dviewer
 			if (scene.fpv)
 			{
 				scene.fpv.moveSpeed = cameraDistance * 0.005;
-				scene.fpv.position = new Vector3D(cameraDistance, cameraDistance, cameraDistance);
+				scene.fpv.position = new Vector3D(cameraDistance * 0.5, -cameraDistance * 0.5, cameraDistance * 0.5);
 				scene.fpv.lookAt3D(cameraCenterPoint);
 			}
 			
