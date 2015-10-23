@@ -126,24 +126,30 @@ package project.m3dviewer
 				*/
 				if (obj is Bone && !parser.hasModel)
 				{
-					var bone:Mesh = boneMesh.reference() as Mesh;
-					obj.addChild(bone);
 					var children:Vector.<Object3D> = obj.getChildren(false, false, Bone);
 					if (children.length > 0)
 					{
-						var position:Vector3D = children[0].getPosition();
-						position.scaleBy(0.5);
-						bone.setPosition3D(position);
-						bone.lookAt3D(children[0].getPosition());
-						bone.scaleY = position.length * 2;
-						var boneThickness:Number = bone.scaleY * 0.2;
-						bone.scaleX = boneThickness;
-						bone.scaleZ = boneThickness;
-						boneThicknessList.push(boneThickness);
+						for each (var item:Object3D in children) 
+						{
+							var bone:Mesh = boneMesh.reference() as Mesh;
+							obj.addChild(bone);
+							
+							var position:Vector3D = item.getPosition();
+							position.scaleBy(0.5);
+							bone.setPosition3D(position);
+							bone.lookAt3D(item.getPosition());
+							bone.scaleY = position.length * 2;
+							var boneThickness:Number = bone.scaleY * 0.2;
+							bone.scaleX = boneThickness;
+							bone.scaleZ = boneThickness;
+							boneThicknessList.push(boneThickness);
+						}
 					}
 					else
 					{
-						topBoneList.push(bone);
+						var bone2:Mesh = boneMesh.reference() as Mesh;
+						obj.addChild(bone2);
+						topBoneList.push(bone2);
 					}
 				}
 			}
