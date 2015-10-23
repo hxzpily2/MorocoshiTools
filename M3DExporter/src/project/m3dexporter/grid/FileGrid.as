@@ -58,7 +58,15 @@ package project.m3dexporter.grid
 		{
 			for each(var file:File in e.clipData.fileList)
 			{
-				addItem(null, file, true);
+				var row:RowItem = getRowByURL(FileUtil.url(file));
+				if (row)
+				{
+					row.highlight();
+				}
+				else
+				{
+					addItem(null, file, true);
+				}
 			}
 		}
 		
@@ -101,6 +109,18 @@ package project.m3dexporter.grid
 			{
 				addItem(user.itemList[i], null, false);
 			}
+		}
+		
+		public function getRowByURL(url:String):RowItem 
+		{
+			for each (var item:DataGridItem in grid.items) 
+			{
+				if (item.getValue("source") == url)
+				{
+					return item.extra;
+				}
+			}
+			return null;
 		}
 		
 	}

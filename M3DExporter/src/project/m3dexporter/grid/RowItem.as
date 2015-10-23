@@ -1,8 +1,10 @@
 package project.m3dexporter.grid 
 {
+	import flash.events.Event;
 	import flash.events.MouseEvent;
 	import flash.filesystem.File;
 	import flash.geom.ColorTransform;
+	import flash.utils.getTimer;
 	import net.morocoshi.air.components.minimal.Modal;
 	import net.morocoshi.air.files.FileUtil;
 	import net.morocoshi.air.menu.AirMenu;
@@ -47,11 +49,17 @@ package project.m3dexporter.grid
 		private var previewButton:GridCellButton;
 		private var offAlpha:Number = 0.1;
 		private var errorList:Array = [];
+		private var selectColorTransform:ColorTransform;
+		private var highlightColorTransform:ColorTransform;
+		private var startTime:int;
 		
 		public function RowItem(item:DataGridItem, convertItem:ConvertItem) 
 		{
 			this.item = item;
 			this.data = convertItem;
+			
+			selectColorTransform = new ColorTransform();
+			highlightColorTransform = new ColorTransform();
 			
 			item.extra = this;
 			exportModel = item.getComponent("exportModel") as GridCellBitmap;
@@ -72,7 +80,7 @@ package project.m3dexporter.grid
 			materialFolder.inputMode = InputFile.MODE_FOLDER;
 			sourceFile.inputMode = InputFile.MODE_FILE_OPEN;
 			ignoreFolder.addEventListener(DataGridEvent.CHANGE, ignore_selectHandler);
-			selectCheck.addEventListener(DataGridEvent.CHANGE, cehck_selectHandler);
+			selectCheck.addEventListener(DataGridEvent.CHANGE, check_selectHandler);
 			fixPNG.addEventListener(DataGridEvent.CHANGE, fix_selectHandler);
 			option.addEventListener(MouseEvent.CLICK, option_clickHandler);
 			convert.addEventListener(MouseEvent.CLICK, convert_clickHandler);
@@ -280,22 +288,53 @@ package project.m3dexporter.grid
 			errorList = list? list.concat() : [];
 		}
 		
+		public function highlight():void 
+		{
+			startTime = getTimer();
+			item.sprite.addEventListener(Event.ENTER_FRAME, enterFrameHandler);
+		}
+		
+		private function enterFrameHandler(e:Event):void 
+		{
+			var density:Number = 1 - (getTimer() - startTime) / 2000;
+			if (density < 0) density = 0;
+			
+			highlightColorTransform = Palette.getFillColor(0xff4400, density);
+			
+			if (density == 0)
+			{
+				item.sprite.removeEventListener(Event.ENTER_FRAME, enterFrameHandler);
+			}
+			updateColorTransform();
+		}
+		
 		private function option_clickHandler(e:MouseEvent):void 
 		{
 			var option:M3DExportOption = data.useCommon? Main.current.user.commonOption : data.localOption;
-			new Settings().open(option);
+			var title:String = data.useCommon? "共有設定" : "個別設定";
+			new Settings().open(option, title);
 		}
 		
-		private function cehck_selectHandler(e:DataGridEvent):void 
+		private function check_selectHandler(e:DataGridEvent):void 
 		{
 			if (selectCheck.checkBox.selected)
 			{
-				item.sprite.transform.colorTransform = Palette.getMultiplyColor(0x77aaee, 1);
+				selectColorTransform = Palette.getMultiplyColor(0x77aaee, 1);
 			}
 			else
 			{
-				item.sprite.transform.colorTransform = new ColorTransform();
+				selectColorTransform = new ColorTransform();
 			}
+			updateColorTransform();
+		}
+		
+		private function updateColorTransform():void 
+		{
+			var colorTransform:ColorTransform = new ColorTransform();
+			colorTransform.concat(selectColorTransform);
+			colorTransform.concat(highlightColorTransform);
+			
+			item.sprite.transform.colorTransform = colorTransform;
 		}
 		
 		private function export_clickHandler(e:MouseEvent):void 

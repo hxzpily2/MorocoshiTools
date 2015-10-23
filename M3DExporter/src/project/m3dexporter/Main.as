@@ -262,8 +262,17 @@ package project.m3dexporter
 			
 			if (ext == "fbx" || ext == "dae")
 			{
-				fileGrid.addItem(null, file, true);
-				stage.nativeWindow.activate();
+				var row:RowItem = fileGrid.getRowByURL(FileUtil.url(file));
+				if (row)
+				{
+					row.highlight();
+				}
+				else
+				{
+					fileGrid.addItem(null, file, true);
+				}
+				stage.nativeWindow.alwaysInFront = true;
+				stage.nativeWindow.alwaysInFront = false;
 			}
 		}
 		
