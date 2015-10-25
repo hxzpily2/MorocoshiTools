@@ -57,6 +57,7 @@ package project.m3dexporter.setting
 		private var fixMaxStyleTexture:CheckBox;
 		private var halfWeight:CheckBox;
 		private var convertJpgEnabled:CheckBox;
+		private var exportAlpha:CheckBox;
 		private var convertJpgQuality:InputNumber;
 		private var boneLimit:InputNumber;
 		
@@ -85,7 +86,7 @@ package project.m3dexporter.setting
 			window.stage.scaleMode = "noScale";
 			window.stage.align = "TL";
 			window.stage.stageWidth = 440;
-			window.stage.stageHeight = 570;
+			window.stage.stageHeight = 590;
 			window.stage.color = 0xF3F3F3;
 			
 			var box:VBox = new VBox(window.stage, 20, 20);
@@ -97,6 +98,7 @@ package project.m3dexporter.setting
 			exportCamera = createCheckBox(box, "カメラを書き出す", rgb);
 			exportLight = createCheckBox(box, "ライトを書き出す", rgb);
 			exportTransparentMap = createCheckBox(box, "不透明度マップを書き出す", rgb);
+			exportAlpha = createCheckBox(box, "数値による不透明度情報を書き出す", rgb);
 			exportNormalMap = createCheckBox(box, "ノーマルマップを書き出す", rgb);
 			fixMaxStyleTexture = createCheckBox(box, "拡散反射と不透明マップに同じPNGが貼られていた場合に不透明を消す", rgb);
 			//exportReflectionMap = createCheckBox(box, "反射マップを書き出す", rgb);
@@ -183,6 +185,7 @@ package project.m3dexporter.setting
 			//option.exportReflection = exportReflectionMap.selected;
 			option.exportTransparent = exportTransparentMap.selected;
 			option.fixMaxStylePngTexture = fixMaxStyleTexture.selected;
+			option.exportAlpha = exportAlpha.selected;
 			
 			option.exportUV = exportVertexUV.selected;
 			option.exportNormal = exportVertexNormal.selected;
@@ -231,6 +234,7 @@ package project.m3dexporter.setting
 			exportCamera.selected = option.exportCamera;
 			exportLight.selected = option.exportLight;
 			exportTransparentMap.selected = option.exportTransparent;
+			exportAlpha.selected = option.exportAlpha;
 			//exportReflectionMap.selected = option.exportReflection;
 			exportNormalMap.selected = option.exportNormal;
 			fixMaxStyleTexture.selected = option.fixMaxStylePngTexture;

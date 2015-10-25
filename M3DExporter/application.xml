@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <application xmlns="http://ns.adobe.com/air/application/17.0">
   <id>project.m3dexporter.M3DExporter</id>
-  <versionNumber>0.7.8</versionNumber>
+  <versionNumber>0.7.10</versionNumber>
   <filename>M3DExporter</filename>
   <name>M3DExporter</name>
   <initialWindow>
