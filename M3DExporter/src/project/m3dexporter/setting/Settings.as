@@ -58,6 +58,7 @@ package project.m3dexporter.setting
 		private var halfWeight:CheckBox;
 		private var convertJpgEnabled:CheckBox;
 		private var exportAlpha:CheckBox;
+		private var mergeNestedMesh:CheckBox;
 		private var convertJpgQuality:InputNumber;
 		private var boneLimit:InputNumber;
 		
@@ -86,7 +87,7 @@ package project.m3dexporter.setting
 			window.stage.scaleMode = "noScale";
 			window.stage.align = "TL";
 			window.stage.stageWidth = 440;
-			window.stage.stageHeight = 590;
+			window.stage.stageHeight = 620;
 			window.stage.color = 0xF3F3F3;
 			
 			var box:VBox = new VBox(window.stage, 20, 20);
@@ -121,6 +122,7 @@ package project.m3dexporter.setting
 			lockUserPropertyObject = createCheckBox(box, " （ユーザープロパティ付きは削除しない）", rgb);
 			lockSkinEmptyObject = createCheckBox(box, " （スキンの中の空コンテナは削除しない）", rgb);
 			optimizeSurface = createCheckBox(box, "同一マテリアルのサーフェイスを統合する", rgb);
+			mergeNestedMesh = createCheckBox(box, "基点移動で発生したメッシュのネスト化を解除する", rgb);
 			moveToRoot = createCheckBox(box, "可能なものは全てルート階層に移動する", rgb);
 			
 			var hbox:HBox;
@@ -165,6 +167,7 @@ package project.m3dexporter.setting
 			MouseOverLabel.instance.setLabel(exportVertexNormal, "もしあれば、頂点に法線情報を追加します。\n頂点アトリビュートを1つ消費します。");
 			MouseOverLabel.instance.setLabel(exportVertexColor, "もしあれば、頂点に頂点カラー情報を追加します。\n頂点アトリビュートを1つ消費します。");
 			MouseOverLabel.instance.setLabel(exportVertexTangent, "もしあれば、頂点に接線、従法線情報を追加します。\n頂点アトリビュートを1つ消費します。");
+			MouseOverLabel.instance.setLabel(mergeNestedMesh, "基点をずらしたメッシュがダミーオブジェクトでネスト化されている場合、\nダミーオブジェクトを削除してメッシュのネスト化を解除します。\n基点が元に戻ってしまうため、回転やスケーリングの\nアニメーションをする場合はネストの解除はしないようにしてください。");
 			
 			//MouseOverLabel.instance.setLabel(exportReflectionMap, "マテリアルに設定されている反射マップを書き出すかを設定します。");
 			//MouseOverLabel.instance.setLabel(removeDirectory, "マテリアルが使用しているテクスチャマップパスのフォルダを削りファイル名だけにします。\nマテリアルフォルダを指定したい場合はこれを有効にする必要があります。");
@@ -204,6 +207,7 @@ package project.m3dexporter.setting
 			option.lockSkinEmptyObject = lockSkinEmptyObject.selected;
 			option.moveToRoot = moveToRoot.selected;
 			option.optimizeSurface = optimizeSurface.selected;
+			option.mergeNestedMesh = mergeNestedMesh.selected;
 			option.convertJpgEnabled = convertJpgEnabled.selected;
 			option.convertJpgQuality = convertJpgQuality.value;
 			option.halfWeight = halfWeight.selected;
@@ -250,6 +254,7 @@ package project.m3dexporter.setting
 			//removeDirectory.selected = option.removeDirectory;
 			moveToRoot.selected = option.moveToRoot;
 			optimizeSurface.selected = option.optimizeSurface;
+			mergeNestedMesh.selected = option.mergeNestedMesh;
 			convertJpgEnabled.selected = option.convertJpgEnabled;
 			convertJpgQuality.value = option.convertJpgQuality;
 			halfWeight.selected = option.halfWeight;
