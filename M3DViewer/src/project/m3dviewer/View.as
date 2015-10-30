@@ -5,6 +5,8 @@ package project.m3dviewer
 	import flash.display3D.Context3DProfile;
 	import flash.events.Event;
 	import flash.geom.Vector3D;
+	import flash.profiler.profile;
+	import flash.profiler.profile;
 	import net.morocoshi.air.components.minimal.Modal;
 	import net.morocoshi.air.files.FileUtil;
 	import net.morocoshi.common.loaders.tfp.events.TFPErrorEvent;
@@ -85,7 +87,7 @@ package project.m3dviewer
 		public function init():void 
 		{
 			scene.addEventListener(Event.COMPLETE, scene_completeHandler);
-			scene.init(stage.stage3Ds[0], "auto", Context3DProfile.BASELINE_EXTENDED);
+			scene.init(stage.stage3Ds[0], "auto", Main.current.user.profileType || Context3DProfile.BASELINE);
 		}
 		
 		private function scene_completeHandler(e:Event):void 

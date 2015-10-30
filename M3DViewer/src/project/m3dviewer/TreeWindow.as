@@ -12,7 +12,9 @@ package project.m3dviewer
 	import net.morocoshi.components.tree.TreeLimbEvent;
 	import net.morocoshi.moja3d.objects.Mesh;
 	import net.morocoshi.moja3d.objects.Object3D;
+	import net.morocoshi.moja3d.objects.Skin;
 	import net.morocoshi.moja3d.renderer.MaskColor;
+	import net.morocoshi.moja3d.resources.VertexAttribute;
 	
 	/**
 	 * 木構造の表示
@@ -101,6 +103,14 @@ package project.m3dviewer
 		
 		private function analysisObject(extra:Object3D):void 
 		{
+			var skin:Skin = extra as Skin;
+			if (skin)
+			{
+				addLog(skin.geometry.hasAttribute(VertexAttribute.POSITION));
+				addLog(skin.geometry.hasAttribute(VertexAttribute.VERTEXCOLOR));
+				addLog(skin.geometry.hasAttribute(VertexAttribute.UV));
+				addLog(skin.geometry.hasAttribute(VertexAttribute.NORMAL));
+			}
 			addLog(extra + ":" + extra.worldMatrix.decompose());
 			var mesh:Mesh = extra as Mesh;
 			if (mesh == null) return;

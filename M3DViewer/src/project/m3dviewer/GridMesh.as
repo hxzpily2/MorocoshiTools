@@ -30,7 +30,7 @@ package project.m3dviewer
 				line.y = (height - thickness) * (iy / (segmentH) - 0.5);
 				addChild(line);
 			}
-			update(null, true);
+			update();
 		}
 		
 	}

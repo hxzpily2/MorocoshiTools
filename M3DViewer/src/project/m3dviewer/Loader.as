@@ -7,6 +7,7 @@ package project.m3dviewer
 	import flash.utils.getTimer;
 	import net.morocoshi.air.components.minimal.Modal;
 	import net.morocoshi.air.files.LocalFile;
+	import net.morocoshi.common.graphics.Palette;
 	import net.morocoshi.moja3d.bounds.BoundingBox;
 	import net.morocoshi.moja3d.loader.M3DParser;
 	import net.morocoshi.moja3d.materials.preset.FillMaterial;
@@ -25,6 +26,7 @@ package project.m3dviewer
 		public var onParse:Function;
 		
 		private var boneMesh:Cube;
+		private var initialBoneMesh:Cube;
 		private var modelData:ModelData;
 		private var parser:M3DParser;
 		private var tempTime:int;
@@ -33,7 +35,8 @@ package project.m3dviewer
 		public function Loader() 
 		{
 			_isLoading = false;
-			boneMesh = new Cube(1, 1, 1, 1, 1, 1, new FillMaterial(0xffee00, 1, true));
+			boneMesh = new Cube(1, 1, 1, 1, 1, 1, new FillMaterial(0xffee00, 0.7, true));
+			initialBoneMesh = new Cube(10, 10, 10, 1, 1, 1, new FillMaterial(0x00eeff, 0.7, true));
 		}
 		
 		public function load(file:File):void
@@ -124,8 +127,19 @@ package project.m3dviewer
 					//scene.billboard.addObject(obj, pivot, plane, fAxis, tAxis);
 				}
 				*/
-				if (obj is Bone && !parser.hasModel)
+				var showBone:Boolean = !parser.hasModel;
+				if (obj is Bone && showBone)
 				{
+					/*
+					var joint:Bone = obj as Bone;
+					if (joint)
+					{
+						var initialMesh:Mesh = initialBoneMesh.reference() as Mesh;
+						initialMesh.matrix = joint.initialMatrix;
+						initialMesh.colorTransform = Palette.getFillColor(0xff0000, 0.5);
+						parser.hierarchy.push(initialMesh);
+					}
+					*/
 					var children:Vector.<Object3D> = obj.getChildren(false, false, Bone);
 					if (children.length > 0)
 					{
@@ -159,7 +173,14 @@ package project.m3dviewer
 			{
 				avaThickness += thickness;
 			}
-			avaThickness /= boneThicknessList.length;
+			if (boneThicknessList.length)
+			{
+				avaThickness /= boneThicknessList.length;
+			}
+			else
+			{
+				avaThickness = 10;
+			}
 			for each(var topBone:Mesh in topBoneList)
 			{
 				topBone.setScale(avaThickness);

@@ -25,6 +25,7 @@ package project.m3dviewer
 	import net.morocoshi.components.minimal.layout.LayoutCell;
 	import net.morocoshi.moja3d.resources.ExternalTextureResource;
 	import net.morocoshi.moja3d.resources.Resource;
+	import net.morocoshi.moja3d.view.ContextProxy;
 	
 	/**
 	 * テクスチャリサイズ
@@ -38,7 +39,7 @@ package project.m3dviewer
 		private var progress:ProgressBar;
 		
 		private var isReady:Boolean;
-		private var context3D:Context3D;
+		private var context3D:ContextProxy;
 		private var tempFolder:File;
 		private var exportItems:Vector.<DataGridItem>;
 		private var m3dFile:File;
@@ -150,7 +151,7 @@ package project.m3dviewer
 			Modal.alert(target.nativePath + "\nにリサイズテクスチャを書き出しました。");
 		}
 		
-		public function open(m3dFile:File, resources:Vector.<Resource>, context3D:Context3D):void
+		public function open(m3dFile:File, resources:Vector.<Resource>, context3D:ContextProxy):void
 		{
 			if (m3dFile == null) return;
 			

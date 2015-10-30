@@ -132,6 +132,7 @@ package project.m3dviewer
 		{
 			currentData = modelData;
 			currentPlayer = modelData.parser.animationPlayer;
+			currentPlayer.interpolationEnabled = false;
 			folderIcon.enabled = true;
 			resizeIcon.enabled = true;
 			playerBox.enabled = (currentPlayer && currentPlayer.keyAnimations.length > 0);

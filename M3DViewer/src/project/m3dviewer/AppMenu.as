@@ -1,5 +1,7 @@
 package project.m3dviewer 
 {
+	import flash.display.NativeMenuItem;
+	import flash.display3D.Context3DProfile;
 	import flash.filesystem.File;
 	import net.morocoshi.air.files.FileUtil;
 	import net.morocoshi.air.menu.AirMenu;
@@ -13,6 +15,7 @@ package project.m3dviewer
 	public class AppMenu 
 	{
 		private var fileMenu:AirMenu;
+		private var profileMenu:AirMenu;
 		public var recentMenu:RecentMenu;
 		public var menu:AirMenu;
 		
@@ -33,7 +36,31 @@ package project.m3dviewer
 			recentMenu.addSubMenuTo(fileMenu, "最近開いたファイル");
 			fileMenu.addSeparator();
 			fileMenu.addMenuItem("終了", "", null, close_selectHandler);
-			menu.addSubmenu(fileMenu, "ファイル")
+			menu.addSubmenu(fileMenu, "ファイル");
+			
+			profileMenu = new AirMenu();
+			profileMenu.addMenuItem("BASELINE_CONSTRAINED", "", null, profile_selectHandler, [Context3DProfile.BASELINE_CONSTRAINED]);
+			profileMenu.addMenuItem("BASELINE", "", null, profile_selectHandler, [Context3DProfile.BASELINE]);
+			profileMenu.addMenuItem("BASELINE_EXTENDED", "", null, profile_selectHandler, [Context3DProfile.BASELINE_EXTENDED]);
+			profileMenu.addMenuItem("STANDARD_CONSTRAINED", "", null, profile_selectHandler, [Context3DProfile.STANDARD_CONSTRAINED]);
+			profileMenu.addMenuItem("STANDARD", "", null, profile_selectHandler, [Context3DProfile.STANDARD]);
+			profileMenu.addMenuItem("STANDARD_EXTENDED", "", null, profile_selectHandler, [Context3DProfile.STANDARD_EXTENDED]);
+			menu.addSubmenu(profileMenu, "プロファイル");
+			updateMenuSelect();
+		}
+		
+		private function updateMenuSelect():void 
+		{
+			for each(var item:NativeMenuItem in profileMenu.items)
+			{
+				item.checked = Context3DProfile[item.label] == Main.current.user.profileType;
+			}
+		}
+		
+		private function profile_selectHandler(profile:String):void 
+		{
+			Main.current.user.profileType = profile;
+			updateMenuSelect();
 		}
 		
 		private function recent_selectHandler(path:String):void 
