@@ -75,7 +75,7 @@ package project.m3dexporter.grid
 			fixPNG = item.getComponent("fixPNG") as GridCellCheckBox;
 			threshold = item.getComponent("threshold") as GridCellInputText;
 			previewButton = item.getComponent("preview") as GridCellButton;
-			convert.transform.colorTransform = Palette.getMultiplyColor(0xffdd77, 1);
+			convert.transform.colorTransform = Palette.getMultiplyColor(0xffdd77, 1, 1);
 			
 			materialFolder.inputMode = InputFile.MODE_FOLDER;
 			sourceFile.inputMode = InputFile.MODE_FILE_OPEN;
@@ -319,7 +319,7 @@ package project.m3dexporter.grid
 		{
 			if (selectCheck.checkBox.selected)
 			{
-				selectColorTransform = Palette.getMultiplyColor(0x77aaee, 1);
+				selectColorTransform = Palette.getMultiplyColor(0x77aaee, 1, 1);
 			}
 			else
 			{

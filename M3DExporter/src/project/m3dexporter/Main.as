@@ -134,7 +134,7 @@ package project.m3dexporter
 			output.addCell(new Component(), "5px");
 			output.addCell(outputFolder, "*");
 			output.addCell(new Component(), "5px");
-			output.addCell(new PushButton(null, 0, 0, "一括変換", convertAll), "140px").transform.colorTransform = Palette.getMultiplyColor(0xffdd77, 1);
+			output.addCell(new PushButton(null, 0, 0, "一括変換", convertAll), "140px").transform.colorTransform = Palette.getMultiplyColor(0xffdd77, 1, 1);
 			output.addCell(new Component(), "10px");
 			
 			rootCell.addCell(tracer, "200px");
