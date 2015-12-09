@@ -185,10 +185,10 @@ package project.m3dviewer
 			while (modelContainer.children)
 			{
 				var child:Object3D = modelContainer.children;
-				child.remove();
-				child.dispose(true);
+				child.clear(true);
 			}
 			scene.billboard.removeAllObject();
+			AGALCache.clear();
 		}
 		
 		public function setSize(w:int, h:int):void 
