@@ -13,13 +13,9 @@ package project.m3dexporter
 	import flash.events.Event;
 	import flash.events.InvokeEvent;
 	import flash.filesystem.File;
-	import flash.utils.ByteArray;
 	import net.morocoshi.air.application.ApplicationData;
 	import net.morocoshi.air.components.minimal.Modal;
-	import net.morocoshi.air.drop.DragDrop;
-	import net.morocoshi.air.drop.DropEvent;
 	import net.morocoshi.air.files.FileUtil;
-	import net.morocoshi.air.files.LocalFile;
 	import net.morocoshi.common.graphics.Palette;
 	import net.morocoshi.common.timers.FrameTimer;
 	import net.morocoshi.components.balloon.MouseOverLabel;
@@ -31,7 +27,6 @@ package project.m3dexporter
 	import net.morocoshi.components.minimal.layout.PaddingBox;
 	import net.morocoshi.components.minimal.style.Coloration;
 	import project.m3dexporter.asset.Asset;
-	import project.m3dexporter.converter.Converter;
 	import project.m3dexporter.converter.ConvertManager;
 	import project.m3dexporter.data.ConvertItem;
 	import project.m3dexporter.data.UserFile;

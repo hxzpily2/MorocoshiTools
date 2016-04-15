@@ -11,16 +11,15 @@ package project.m3dexporter.converter
 	import net.morocoshi.air.files.FileUtil;
 	import net.morocoshi.air.files.LocalFile;
 	import net.morocoshi.common.data.ByteArrayUtil;
-	import net.morocoshi.common.encoders.JPGEncoder;
 	import net.morocoshi.common.graphics.BitmapUtil;
 	import net.morocoshi.common.graphics.EdgeExtruder;
 	import net.morocoshi.common.loaders.ClassAliasUtil;
 	import net.morocoshi.common.loaders.collada.ColladaParser;
 	import net.morocoshi.common.loaders.collada.nodes.ColladaScene;
-	import net.morocoshi.common.loaders.fbx.events.FBXEvent;
 	import net.morocoshi.common.loaders.fbx.FBXParseCollector;
 	import net.morocoshi.common.loaders.fbx.FBXParser;
 	import net.morocoshi.common.loaders.fbx.FBXScene;
+	import net.morocoshi.common.loaders.fbx.events.FBXEvent;
 	import net.morocoshi.common.loaders.tfp.TFPAssetType;
 	import net.morocoshi.common.loaders.tfp.TFPConverter;
 	import net.morocoshi.common.loaders.tfp.TFPFile;
@@ -28,11 +27,11 @@ package project.m3dexporter.converter
 	import net.morocoshi.common.loaders.tfp.TFPLibrary;
 	import net.morocoshi.common.math.list.VectorUtil;
 	import net.morocoshi.common.timers.FrameTimer;
+	import net.morocoshi.moja3d.loader.M3DInfo;
+	import net.morocoshi.moja3d.loader.M3DScene;
 	import net.morocoshi.moja3d.loader.exporters.M3DColladaExporter;
 	import net.morocoshi.moja3d.loader.exporters.M3DExportOption;
 	import net.morocoshi.moja3d.loader.exporters.M3DFBXExporter;
-	import net.morocoshi.moja3d.loader.M3DInfo;
-	import net.morocoshi.moja3d.loader.M3DScene;
 	import net.morocoshi.moja3d.loader.materials.M3DMaterial;
 	
 	/**
@@ -203,8 +202,13 @@ package project.m3dexporter.converter
 			this.m3dScene = m3dScene;
 			if (option.optimizeSurface)
 			{
-				m3dScene.optimize();
+				m3dScene.optimizeSurface();
 			}
+			else
+			{
+				m3dScene.optimizeMeshGeometry();
+			}
+			m3dScene.splitMeshGeometry();
 			if (option.deleteEmptyObject)
 			{
 				m3dScene.removeEmptyObject(option.lockUserPropertyObject, option.lockSkinEmptyObject);

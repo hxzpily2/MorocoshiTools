@@ -10,7 +10,6 @@ package project.m3dexporter.grid
 	import net.morocoshi.air.menu.AirMenu;
 	import net.morocoshi.common.graphics.Palette;
 	import net.morocoshi.common.math.geom.ScaleMode;
-	import net.morocoshi.common.timers.FrameTimer;
 	import net.morocoshi.components.balloon.MouseOverLabel;
 	import net.morocoshi.components.minimal.grid.DataGridEvent;
 	import net.morocoshi.components.minimal.grid.DataGridItem;
@@ -21,12 +20,14 @@ package project.m3dexporter.grid
 	import net.morocoshi.components.minimal.grid.GridCellInputText;
 	import net.morocoshi.components.minimal.input.InputFile;
 	import net.morocoshi.moja3d.loader.exporters.M3DExportOption;
+	import project.m3dexporter.Main;
 	import project.m3dexporter.asset.Asset;
 	import project.m3dexporter.data.ConvertItem;
-	import project.m3dexporter.Main;
 	import project.m3dexporter.setting.Settings;
+	
 	/**
 	 * ...
+	 * 
 	 * @author tencho
 	 */
 	public class RowItem 

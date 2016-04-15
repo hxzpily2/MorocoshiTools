@@ -2,10 +2,12 @@ package project.m3dexporter.menu
 {
 	import flash.display.NativeMenuItem;
 	import net.morocoshi.air.menu.AirMenu;
-	import project.m3dexporter.data.UserFile;
 	import project.m3dexporter.Main;
+	import project.m3dexporter.data.UserFile;
+	
 	/**
 	 * ...
+	 * 
 	 * @author tencho
 	 */
 	public class AppMenu 

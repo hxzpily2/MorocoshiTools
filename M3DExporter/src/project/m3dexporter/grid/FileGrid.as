@@ -7,7 +7,6 @@ package project.m3dexporter.grid
 	import net.morocoshi.air.drop.DropEvent;
 	import net.morocoshi.air.files.FileUtil;
 	import net.morocoshi.common.graphics.Create;
-	import net.morocoshi.common.math.geom.ScaleMode;
 	import net.morocoshi.components.minimal.grid.DataGrid;
 	import net.morocoshi.components.minimal.grid.DataGridItem;
 	import net.morocoshi.components.minimal.grid.GridCellBitmap;
@@ -18,8 +17,10 @@ package project.m3dexporter.grid
 	import project.m3dexporter.asset.Asset;
 	import project.m3dexporter.data.ConvertItem;
 	import project.m3dexporter.data.UserFile;
+	
 	/**
 	 * ...
+	 * 
 	 * @author tencho
 	 */
 	public class FileGrid 

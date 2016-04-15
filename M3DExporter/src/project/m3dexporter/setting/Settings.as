@@ -10,7 +10,6 @@ package project.m3dexporter.setting
 	import flash.display.NativeWindow;
 	import flash.events.Event;
 	import flash.text.TextFormat;
-	import mx.utils.StringUtil;
 	import net.morocoshi.air.components.minimal.Modal;
 	import net.morocoshi.air.windows.ModalManager;
 	import net.morocoshi.air.windows.WindowUtil;
@@ -18,15 +17,12 @@ package project.m3dexporter.setting
 	import net.morocoshi.components.balloon.MouseOverLabel;
 	import net.morocoshi.components.minimal.input.InputFile;
 	import net.morocoshi.components.minimal.input.InputNumber;
-	import net.morocoshi.components.minimal.layout.LayoutCell;
-	import net.morocoshi.components.minimal.layout.PaddingBox;
-	import net.morocoshi.components.minimal.ScrollPane;
 	import net.morocoshi.moja3d.loader.exporters.M3DExportOption;
-	import project.m3dexporter.data.UserFile;
 	import project.m3dexporter.Main;
 	
 	/**
-	 *  
+	 * ...
+	 * 
 	 * @author tencho
 	 */
 	public class Settings

@@ -1,14 +1,13 @@
 package project.m3dexporter.converter 
 {
 	import flash.filesystem.File;
-	import flash.utils.ByteArray;
-	import net.morocoshi.air.components.minimal.Modal;
-	import net.morocoshi.air.files.FileUtil;
+	import project.m3dexporter.Main;
 	import project.m3dexporter.data.ConvertItem;
 	import project.m3dexporter.grid.RowItem;
-	import project.m3dexporter.Main;
+	
 	/**
 	 * ...
+	 * 
 	 * @author tencho
 	 */
 	public class ConvertManager 
