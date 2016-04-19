@@ -22,6 +22,7 @@ package project.m3dviewer
 		[Embed(source = "assets/cube7s.png")] static public var Cube4:Class;
 		[Embed(source = "assets/grid_s.png")] static public var Grid:Class;
 		[Embed(source = "assets/image.png")] static public var Image:Class;
+		[Embed(source = "assets/capture.png")] static public var Capture:Class;
 		
 		static public function image(value:Class, alpha:Number = 1):BitmapData
 		{

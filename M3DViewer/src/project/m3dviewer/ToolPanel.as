@@ -2,9 +2,14 @@ package project.m3dviewer
 {
 	import com.bit101.components.ComboBox;
 	import com.bit101.components.HBox;
+	import flash.display.BitmapData;
+	import flash.display.PNGEncoderOptions;
 	import flash.display.Sprite;
 	import flash.events.Event;
+	import flash.filesystem.File;
 	import flash.filters.GlowFilter;
+	import net.morocoshi.air.files.FileUtil;
+	import net.morocoshi.air.files.LocalFile;
 	import net.morocoshi.common.graphics.Create;
 	import net.morocoshi.common.graphics.Palette;
 	import net.morocoshi.common.timers.Stopwatch;
@@ -42,6 +47,7 @@ package project.m3dviewer
 		private var resizeIcon:BitmapButton;
 		private var colorSelector:ColorSelector;
 		private var stopIcon:BitmapButton;
+		private var captureIcon:BitmapButton;
 		
 		public function ToolPanel() 
 		{
@@ -60,6 +66,7 @@ package project.m3dviewer
 			lightIcon = new BitmapCheckBox(box, 0, 0, new Asset.Cube4, new Asset.Cube2, light_clickHandler);
 			gridIcon = new BitmapCheckBox(box, 0, 0, Asset.image(Asset.Grid, 0.3), new Asset.Grid, grid_clickHandler);
 			resizeIcon = new BitmapButton(box, 0, 0, new Asset.Image, null, null, resize_clickHandler);
+			captureIcon = new BitmapButton(box, 0, 0, new Asset.Capture, null, null, capture_clickHandler);
 			
 			cameraComboBox = new ComboBox(box, 0, 0, "カメラ選択", []);
 			cameraComboBox.width = 140;
@@ -98,6 +105,17 @@ package project.m3dviewer
 			MouseOverLabel.instance.setLabel(playIcon, "再生/一時停止");
 			MouseOverLabel.instance.setLabel(stopIcon, "停止");
 			MouseOverLabel.instance.setLabel(colorSelector, "背景色");
+		}
+		
+		private function capture_clickHandler(e:Event):void 
+		{
+			var grid:Boolean = Main.current.view.gridVisible;
+			Main.current.view.gridVisible = false;
+			var bmd:BitmapData = Main.current.view.scene.capture(true, false, false);
+			var id:String = FileUtil.getNumberingName(File.desktopDirectory, "capture");
+			var file:File = File.desktopDirectory.resolvePath(id + ".png");
+			LocalFile.writeByteArray(file, bmd.encode(bmd.rect, new PNGEncoderOptions(false)), false);
+			Main.current.view.gridVisible = grid;
 		}
 		
 		private function color_selectHadnler(e:Event):void 
