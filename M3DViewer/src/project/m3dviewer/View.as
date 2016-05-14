@@ -94,7 +94,7 @@ package project.m3dviewer
 		{
 			scene.removeEventListener(Event.COMPLETE, scene_completeHandler);
 			
-			scene.root.upload(scene.context3D, true, false);
+			scene.root.upload(scene.context3D, true);
 			scene.startRendering();
 			
 			onInit();
@@ -167,7 +167,7 @@ package project.m3dviewer
 			
 			//setCamera(modelData.parser.cameras[0]);
 			//scene.fpv.moveSpeed = modelData.maxBound * 0.02;
-			scene.root.upload(scene.context3D, true, false);
+			scene.root.upload(scene.context3D, true);
 		}
 		
 		private function instantiation_errorHandler(e:TFPErrorEvent):void 
