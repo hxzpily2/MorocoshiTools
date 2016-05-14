@@ -15,6 +15,7 @@ package project.tfp.canvas.explorer
 	import net.morocoshi.air.components.minimal.Modal;
 	import net.morocoshi.air.drop.DragDrop;
 	import net.morocoshi.air.files.ClipData;
+	import net.morocoshi.air.files.FileUtil;
 	import net.morocoshi.air.files.LocalFile;
 	import net.morocoshi.air.menu.AirMenu;
 	import net.morocoshi.common.loaders.tfp.TFPAssetType;
@@ -23,6 +24,7 @@ package project.tfp.canvas.explorer
 	import net.morocoshi.common.loaders.tfp.TFPFolder;
 	import net.morocoshi.common.loaders.tfp.TFPLoader;
 	import net.morocoshi.common.loaders.tfp.TFPParser;
+	import net.morocoshi.common.math.list.VectorUtil;
 	import net.morocoshi.common.timers.FrameTimer;
 	import net.morocoshi.components.minimal.BitmapClip;
 	import net.morocoshi.components.minimal.buttons.BitmapButton;
@@ -31,6 +33,9 @@ package project.tfp.canvas.explorer
 	import net.morocoshi.components.tree.TreeLimb;
 	import net.morocoshi.components.tree.TreeLimbEvent;
 	import net.morocoshi.components.tree.TreeStyle;
+	import nochump.util.zip.ZipEntry;
+	import nochump.util.zip.ZipFile;
+	import nochump.util.zip.ZipOutput;
 	import project.tfp.converter.FolderImporter;
 	import project.tfp.Document;
 	import project.tfp.file.Asset;
@@ -56,6 +61,8 @@ package project.tfp.canvas.explorer
 		private var openIcon:BitmapButton;
 		private var closeIcon:BitmapButton;
 		private var configIcon:BitmapButton;
+		private var exportIcon:BitmapButton;
+		private var tfpFolder:TFPFolder;
 		
 		public function TFPExplorer() 
 		{
@@ -77,7 +84,8 @@ package project.tfp.canvas.explorer
 			win.scrollSpeed = 50;
 			win.folder.setStyle(style);
 			win.resizable = false;
-			win.folder.addEventListener(TreeLimbEvent.CLICK_ITEM, tree_clickHandler);
+			win.folder.addEventListener(TreeLimbEvent.CHANGE_SELECT, tree_clickHandler);
+			//win.folder.addEventListener(TreeLimbEvent.CLICK_ITEM, tree_clickHandler);
 			win.folder.addEventListener(TreeLimbEvent.WCLICK_ITEM, tree_wclickHandler);
 			
 			addCell(panel, "30px");
@@ -101,6 +109,7 @@ package project.tfp.canvas.explorer
 			configIcon = new BitmapButton(box, 0, 0, Asset.icons[20], null, null, config_clickHandler);
 			copyIcon = new BitmapButton(box, 0, 0, Asset.icons[17], null, null, copy_clickHandler);
 			reloadIcon = new BitmapButton(box, 0, 0, Asset.icons[31], null, null, reload_clickHandler);
+			exportIcon = new BitmapButton(box, 0, 0, Asset.images[212], null, null, export_clickHandler);
 			new BitmapClip(box, 0, 0, Asset.separater);
 			info = new Label(box, 0, -2, "");
 			
@@ -130,18 +139,62 @@ package project.tfp.canvas.explorer
 				case configIcon: info.text = "TFPプレビューの設定"; break;
 				case copyIcon: info.text = "全アセットパスの配列をコピー"; break;
 				case reloadIcon: info.text = "再読み込み"; break;
+				case exportIcon: info.text = "TFPの中身を書き出す"; break;
 			}
 		}
 		
 		private function updateIcons():void
 		{
-			var enabled:Boolean = !!currentFile;
+			var enabled:Boolean = currentFile != null;
 			reloadIcon.enabled = enabled;
 			openIcon.enabled = enabled;
 			closeIcon.enabled = enabled;
 			reloadIcon.enabled = enabled;
 			copyIcon.enabled = enabled;
+			exportIcon.enabled = enabled;
 		}
+		
+		private function export_clickHandler(e:MouseEvent):void 
+		{
+			if (tfpFolder == null) return;
+			
+			var id:String = FileUtil.getFileID(currentFile.name);
+			
+			var zip:ZipOutput = new ZipOutput();
+			for each(var file:TFPFile in tfpFolder.getAllFiles())
+			{
+				var path:String = file.path;
+				if (path.charAt(0) == "/") path = id + path;
+				zip.putNextEntry(new ZipEntry(path));
+				zip.write(file.byteArray);
+				zip.closeEntry();
+			}
+			zip.finish();
+			
+			new File().save(zip.byteArray, id + ".zip");
+			
+			//var targetFolder:File = File.desktopDirectory.resolvePath("test");
+			//targetFolder.createDirectory();
+			//exportFolder(tfpFolder, targetFolder);
+		}
+		
+		/*
+		private function exportFolder(tfp:TFPFolder, output:File):void
+		{
+			for each(var folder:TFPFolder in tfp.folders)
+			{
+				var f:File = output.resolvePath(folder.name);
+				f.createDirectory();
+				exportFolder(folder, f);
+			}
+			
+			for each(var file:TFPFile in tfp.files)
+			{
+				var f2:File =  output.resolvePath(file.name);
+				LocalFile.writeByteArray(f2, file.byteArray, false);
+			}
+		}
+		*/
 		
 		private function reload_clickHandler(e:MouseEvent):void 
 		{
@@ -202,12 +255,18 @@ package project.tfp.canvas.explorer
 		
 		private function tree_clickHandler(e:TreeLimbEvent):void 
 		{
-			var f:* = e.targetLimb.extra;
-			if (f is TFPFile)
+			var tree:TreeLimb = e.currentTarget as TreeLimb;
+			var selected:Vector.<TreeLimb> = tree.getSelectedLimbs();
+			if (selected.length == 0)
 			{
-				Document.canvas.viewer.preview(f);
+				Document.canvas.viewer.preview(null);
 			}
-			if (f is TFPFolder) info.text = TFPFolder(f).path;
+			else
+			{
+				var f:* = selected[0].extra;
+				if (f is TFPFile) Document.canvas.viewer.preview(f);
+				if (f is TFPFolder) info.text = TFPFolder(f).path;
+			}
 		}
 		
 		private function tree_wclickHandler(e:TreeLimbEvent):void 
@@ -249,7 +308,7 @@ package project.tfp.canvas.explorer
 			var loader:TFPParser = new TFPParser();
 			loader.addEventListener(Event.COMPLETE, loader_completeHandler);
 			loader.addEventListener(IOErrorEvent.IO_ERROR, loader_errorHandler);
-			loader.parse(data, true);
+			loader.parse(data, true, false);
 		}
 		
 		private function removeEvents(loader:TFPParser):void
@@ -267,21 +326,53 @@ package project.tfp.canvas.explorer
 		private function loader_completeHandler(e:Event):void 
 		{
 			var loader:TFPParser = e.currentTarget as TFPParser;
+			tfpFolder = loader.root;
 			files = loader.files;
 			removeEvents(e.currentTarget as TFPParser);
+			
 			var time:String = " (" + (getTimer() - time) + "ms)";
 			new FolderImporter().importLibrary(win.folder, loader.root);
 			for each(var limb:TreeLimb in win.folder.getChildLimbs(true, false))
 			{
 				if (limb.isFolder) continue;
+				
 				var menu:AirMenu = new AirMenu();
 				var tfile:TFPFile = limb.extra as TFPFile;
 				var path:String = tfile.path;
 				menu.addMenuItem(path, "").enabled = false;
+				menu.addSeparator();
+				menu.addMenuItem("ファイルを一時的に開く", "", null, openTemp, [tfile]);
+				menu.addMenuItem("ファイルを書き出し", "", null, exportFile, [tfile]);
+				//menu.addSeparator();
+				//menu.addMenuItem("ファイルを削除", "", null, deleteFile, [limb]);
+				menu.addSeparator();
 				menu.addMenuItem("パスをクリップボードにコピー", "", null, copyPath, [path]);
 				limb.contextMenu = menu;
 			}
 			message.visible = false;
+		}
+		
+		private function deleteFile(limb:TreeLimb):void 
+		{
+			var file:TFPFile = limb.extra;
+			var folder:TFPFolder = limb.parentLimb.extra;
+			file.dispose();
+			VectorUtil.deleteItem(folder.files, file);
+			limb.remove();
+		}
+		
+		private function exportFile(tfp:TFPFile):void 
+		{
+			var file:File = new File();
+			file.save(tfp.byteArray, tfp.name);
+		}
+		
+		private function openTemp(tfp:TFPFile):void 
+		{
+			var dir:File = File.createTempDirectory();
+			var file:File = dir.resolvePath(tfp.name);
+			LocalFile.writeByteArray(file, tfp.byteArray, false);
+			file.openWithDefaultApplication();
 		}
 		
 		private function copyPath(path:String):void 

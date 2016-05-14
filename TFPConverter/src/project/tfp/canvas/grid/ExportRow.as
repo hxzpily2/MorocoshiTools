@@ -280,7 +280,7 @@ package project.tfp.canvas.grid
 		private function updateSubfolderBitmap():void 
 		{
 			setValue("type", _subfolder? Asset.icons[33] : Asset.icons[0]);
-			var color:ColorTransform = _subfolder? Palette.getMultiplyColor(0xA6C799, 1) : new ColorTransform();
+			var color:ColorTransform = _subfolder? Palette.getMultiplyColor(0xA6C799, 1, 1) : new ColorTransform();
 			type.panel.transform.colorTransform = color;
 			output.enabled = !_subfolder;
 			var help:String;

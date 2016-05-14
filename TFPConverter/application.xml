@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <application xmlns="http://ns.adobe.com/air/application/17.0">
   <id>project.morocoshi.TFPConverter2</id>
-  <versionNumber>2.0.0</versionNumber>
+  <versionNumber>2.1.0</versionNumber>
   <filename>TFPConverter2</filename>
   <name>TFPConverter2</name>
   <description>画像、テキスト、XML、サウンドファイル等をフォルダ構成を保ったまま1つのバイナリデータに結合します。</description>

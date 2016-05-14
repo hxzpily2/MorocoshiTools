@@ -69,6 +69,17 @@ package project.tfp.canvas.explorer
 		
 		public function preview(file:TFPFile):void
 		{
+			if (file == null)
+			{
+				currentFile = null;
+				text.text = "";
+				imageCanvas.visible = false;
+				soundIcon1.visible = false;
+				soundIcon2.visible = false;
+				text.visible = false;
+				return;
+			}
+			
 			if (file.error || !file.asset)
 			{
 				return;
